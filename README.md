@@ -1,5 +1,15 @@
 # rootisnaked
 
+<!-- START OF TOC !DO NOT EDIT THIS CONTENT MANUALLY-->
+**Table of Contents**  *generated with [mtoc](https://github.com/containerscrew/mtoc)*
+- [rootisnaked](#rootisnaked)
+- [Running `rootisnaked`](#running-rootisnaked)
+  - [Install system dependencies](#install-system-dependencies)
+  - [Compile and run](#compile-and-run)
+- [TODO](#todo)
+- [LICENSE](#license)
+<!-- END OF TOC -->
+
 ![example](example.png)
 
 `Rootisnaked` is a simple [eBPF](https://ebpf.io/) tool to monitor owner id (uid) changes in Linux processes. It can be used, for example, to detect possible Linux privilege escalation.
@@ -28,6 +38,11 @@ This page can be helpful https://ebpf-go.dev/guides/getting-started/#ebpf-c-prog
 ```bash
 make build-run #if using arm64, change GOARCH in Makefile
 ```
+
+# TODO
+
+- Comment the code for better understanding
+
 
 # LICENSE
 
