@@ -53,10 +53,6 @@ func GetCommitCreds() {
 	}
 	defer objs.Close()
 
-	// Open a Kprobe at the entry point of the kernel function and attach the
-	// pre-compiled program. Each time the kernel function enters, the program
-	// will increment the execution counter by 1. The read loop below polls this
-	// map value once per second.
 	kp, err := link.Kprobe(fn, objs.CommitCreds, nil)
 	if err != nil {
 		log.Fatalf(fmt.Sprintf("failed to open kprobe: %v", err))
