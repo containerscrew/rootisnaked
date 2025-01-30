@@ -1,6 +1,6 @@
 module github.com/containerscrew/rootisnaked
 
-go 1.23.5
+go 1.23
 
 require golang.org/x/sync v0.10.0 // indirect
 

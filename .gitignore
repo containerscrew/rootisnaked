@@ -25,4 +25,6 @@ go.work.sum
 .idea/
 .vscode/
 .env/
-.env*
+.env*# Added by goreleaser init:
+dist/
+rootisnaked
