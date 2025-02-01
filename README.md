@@ -12,7 +12,8 @@
 
 ![example](example.png)
 
-`Rootisnaked` is a simple [eBPF](https://ebpf.io/) tool to monitor owner id (uid) changes in Linux processes. It can be used, for example, to detect possible Linux privilege escalation.
+`Rootisnaked` is a simple [eBPF](https://ebpf.io/) program designed to monitor changes in user credentials (specifically, the UID) on a Linux system. It hooks into the `commit_creds` kernel function, which is called when a process's credentials are updated. The program detects when a process's UID changes to 0 (root) and logs this event to a ring buffer for further analysis in user space.
+It can be used, for example, to detect possible Linux privilege escalation.
 
 > The eBPF program (kernel space) is written in C and compiled using [cilium-ebpf library](https://github.com/cilium/ebpf). The code in user space is entirely written in Go.
 
