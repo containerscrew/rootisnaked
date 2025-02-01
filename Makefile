@@ -22,14 +22,15 @@ run-pre-commit: ## Run pre-commit locally
 go-generate: ## Run go generate
 	go generate ./...
 
+gen-vmlinux: ## Generate vmlinux.h headers
+	sudo bpftool btf dump file /sys/kernel/btf/vmlinux format c > headers/vmlinux.h
+
 run: go-generate update-deps ## Run the application
 	CGO_ENABLED=0 GOARCH=$(GOARCH) sudo go run main.go
 
-build-run: go-generate update-deps ## Run the application
+build-run: gen-vmlinux go-generate update-deps ## Run the application
 	CGO_ENABLED=0 GOARCH=$(GOARCH) go build && sudo ./rootisnaked
 
-gen-vmlinux: ## Generate vmlinux.h headers
-	sudo bpftool btf dump file /sys/kernel/btf/vmlinux format c > headers/vmlinux.h
 
 remote-sync: ## Sync this repository to remote machine using rsync.
 	rsync -avzh --exclude='.git/' $(shell pwd)/ $(USER)@$(IP):/home/$(USER)/rootisnaked

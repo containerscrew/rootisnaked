@@ -31,6 +31,14 @@ It can be used, for example, to detect possible Linux privilege escalation.
 > [!CAUTION]
 > This is an introduction of eBPF. This tool probably does not cover all possible attack vectors for escalating privileges.
 
+To extend this tool, you probably need to detect:
+
+- Gaining capabilities (CAP_SYS_ADMIN...)
+- Changing group IDS (gid)
+- Manipulating file permissions (`chmod`, `setuid`...)
+- Track parent process ID (ppid) and process hierarchy
+- Others
+
 # Running `rootisnaked`
 
 ## Install system dependencies
