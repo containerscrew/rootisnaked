@@ -61,12 +61,31 @@ sudo apt install -y linux-headers-$(uname -r) gcc git make clang llvm libbpf-dev
 make build-run GOARCH=amd64 # if using arm, GOARCH=arm64
 ```
 
+## Using docker
+
+```bash
+docker build -t rootisnaked/rootisnaked:latest .
+```
+
+**eBPF code needs to be run under a privileged user.**
+
+```bash
+docker run -it --rm --name rootisnaked --privileged rootisnaked/rootisnaked:latest
+```
+
 # Simulate
 
 ```bash
 sudo su - 
 sudo capsh --add=cap_sys_admin=eip --command="/path/to/some_process"
 ```
+
+# What's next?
+
+- Implement more features
+- Send notifications to systray (notify-send)
+- Implement testing
+- Others
 
 # License
 
