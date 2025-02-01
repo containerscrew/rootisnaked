@@ -28,3 +28,6 @@ go.work.sum
 .env*# Added by goreleaser init:
 dist/
 rootisnaked
+
+# Do not push go-generates
+*_bpfel*

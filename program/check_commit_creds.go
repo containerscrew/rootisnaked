@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"log"
+	devstdout "github.com/containerscrew/devstdout/pkg"
 	"os"
 	"strings"
 
@@ -37,31 +37,31 @@ func getCommandLine(pid int32) string {
 	return strings.ReplaceAll(string(data), "\x00", " ")
 }
 
-func GetCommitCreds() {
+func GetCommitCreds(log *devstdout.CustomLogger) {
 	// Name of the kernel function to trace.
 	fn := "commit_creds"
 
 	// Allow the current process to lock memory for eBPF resources.
 	if err := rlimit.RemoveMemlock(); err != nil {
-		log.Fatalf(fmt.Sprintf("failed to remove memlock rlimit: %v. Consider using sudo or give necessary capabilities to the program", err))
+		log.Error(fmt.Sprintf("failed to remove memlock rlimit: %v. Consider using sudo or give necessary capabilities to the program", err))
 	}
 
 	// Load pre-compiled programs and maps into the kernel.
 	objs := bpfObjects{}
 	if err := loadBpfObjects(&objs, nil); err != nil {
-		log.Fatalf(fmt.Sprintf("loading objects: %v", err))
+		log.Error(fmt.Sprintf("loading objects: %v", err))
 	}
 	defer objs.Close()
 
 	kp, err := link.Kprobe(fn, objs.CommitCreds, nil)
 	if err != nil {
-		log.Fatalf(fmt.Sprintf("failed to open kprobe: %v", err))
+		log.Error(fmt.Sprintf("failed to open kprobe: %v", err))
 	}
 	defer kp.Close()
 
 	rd, err := ringbuf.NewReader(objs.bpfMaps.Events)
 	if err != nil {
-		log.Fatalf(fmt.Sprintf("failed to create ring buffer reader: %v", err))
+		log.Error(fmt.Sprintf("failed to create ring buffer reader: %v", err))
 	}
 	defer rd.Close()
 
@@ -70,16 +70,16 @@ func GetCommitCreds() {
 		record, err := rd.Read()
 		if err != nil {
 			if errors.Is(err, ringbuf.ErrClosed) {
-				log.Printf("received signal, closing ringbuf reader..")
+				log.Warning("received signal, closing ringbuf reader..")
 				return
 			}
-			log.Printf("reading from reader: %s\n", err)
+			log.Error("reading from reader: %s\n", err)
 			continue
 		}
 
 		// Parse the ringbuf event entry into a bpfEvent structure.
 		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
-			log.Printf("parsing ringbuf event: %s", err)
+			log.Warning("parsing ringbuf event: %s", err)
 			continue
 		}
 
@@ -88,8 +88,13 @@ func GetCommitCreds() {
 		cmdLine := getCommandLine(event.Tgid)
 
 		if cmdLine != "" {
-			log.Printf("Root escalation detected: pid: %d, executable path: %s cmdline: %s, old_uid: %d new_uid: %d\n", event.Tgid, exePath, cmdLine, event.OldUid, event.NewUid)
+			log.Info("Root privilege escalation detected",
+				devstdout.Argument("pid", event.Tgid),
+				devstdout.Argument("exe_path", exePath),
+				devstdout.Argument("cmd_line", cmdLine),
+				devstdout.Argument("old_uid", event.OldUid),
+				devstdout.Argument("new_uid", event.NewUid),
+			)
 		}
-
 	}
 }

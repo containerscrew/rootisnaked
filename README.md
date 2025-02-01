@@ -1,3 +1,15 @@
+<p align="center" >
+    <img src="logo.png" alt="logo" width="250"/>
+<h3 align="center">rootisnaked</h3>
+<p align="center">Simple root privilege escalation detection using eBPF</p>
+</p>
+
+<p align="center" >
+    <img alt="Go report card" src="https://goreportcard.com/badge/github.com/containerscrew/rootisnaked">
+    <img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/containerscrew/rootisnaked">
+    <img alt="GitHub go.mod Go version" src="https://img.shields.io/github/go-mod/go-version/containerscrew/rootisnaked">
+</p>
+
 # rootisnaked
 
 <!-- START OF TOC !DO NOT EDIT THIS CONTENT MANUALLY-->
@@ -6,8 +18,7 @@
 - [Running `rootisnaked`](#running-rootisnaked)
   - [Install system dependencies](#install-system-dependencies)
   - [Compile and run](#compile-and-run)
-- [TODO](#todo)
-- [LICENSE](#license)
+- [License](#license)
 <!-- END OF TOC -->
 
 ![example](example.png)
@@ -26,25 +37,22 @@ It can be used, for example, to detect possible Linux privilege escalation.
 
 > Tested on `debian12` with kernel version `6.1.0-30-amd64`
 
+* Dependencies:
+
 ```bash
 sudo apt install -y linux-headers-$(uname -r) gcc git make clang llvm libbpf-dev libbpf-tools bpftool bpftrace
 ```
 
 * Install Golang: https://go.dev/doc/install (Do not install Golang from the APT repository if using Debian, since it does not have the latest versions)
 
-This page can be helpful https://ebpf-go.dev/guides/getting-started/#ebpf-c-program
+*This page can be helpful https://ebpf-go.dev/guides/getting-started/#ebpf-c-program*
 
 ## Compile and run
 
 ```bash
-make build-run #if using arm64, change GOARCH in Makefile
+make build-run GOARCH=amd64 # if using arm, GOARCH=arm64
 ```
 
-# TODO
+# License
 
-- Comment the code for better understanding
-
-
-# LICENSE
-
-[`license`](./LICENSE)
+**`rootisnaked`** is distributed under the terms of the [AGPL3](./LICENSE) license.

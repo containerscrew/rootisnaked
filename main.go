@@ -1,13 +1,16 @@
 package main
 
 import (
-	"log"
-
+	devstdout "github.com/containerscrew/devstdout/pkg"
 	"github.com/containerscrew/rootisnaked/program"
 )
 
 func main() {
-	log.Print("Starting rootisnaked")
+	log := devstdout.NewLogger(
+		devstdout.OptionsLogger{Level: "info", AddSource: false, LoggerType: "console"},
+	)
 
-	program.GetCommitCreds()
+	log.Success("Starting rootisnaked...")
+
+	program.GetCommitCreds(log)
 }
