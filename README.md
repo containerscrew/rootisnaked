@@ -84,7 +84,7 @@ docker run -it --rm --name rootisnaked --privileged rootisnaked/rootisnaked:late
 
 ```bash
 sudo su -
-sudo capsh --add=cap_sys_admin=eip --command="/path/to/some_process"
+sudo capsh --caps="cap_sys_admin+eip" -- -c "/path/to/some_process"
 ```
 
 # What's next?
