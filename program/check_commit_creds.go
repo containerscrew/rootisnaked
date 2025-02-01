@@ -73,7 +73,7 @@ func GetCommitCreds() {
 				log.Printf("received signal, closing ringbuf reader..")
 				return
 			}
-			log.Println("reading from reader: %s", err)
+			log.Printf("reading from reader: %s\n", err)
 			continue
 		}
 
@@ -92,5 +92,4 @@ func GetCommitCreds() {
 		}
 
 	}
-
 }

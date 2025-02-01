@@ -16,7 +16,7 @@
 
 > The eBPF program (kernel space) is written in C and compiled using [cilium-ebpf library](https://github.com/cilium/ebpf). The code in user space is entirely written in Go.
 
-> [!CAUTION]  
+> [!CAUTION]
 > This is an introduction of eBPF. This tool probably does not cover all possible attack vectors for escalating privileges.
 
 # Running `rootisnaked`

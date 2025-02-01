@@ -20,10 +20,10 @@ jobs:
       - name: Setup dependencies
         run: |
             apt install -y clang libbpf llvm-strip
-      
+
       - name: Set up Go
         uses: actions/setup-go@v5
-      
+
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
