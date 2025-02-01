@@ -61,6 +61,13 @@ sudo apt install -y linux-headers-$(uname -r) gcc git make clang llvm libbpf-dev
 make build-run GOARCH=amd64 # if using arm, GOARCH=arm64
 ```
 
+# Simulate
+
+```bash
+sudo su - 
+sudo capsh --add=cap_sys_admin=eip --command="/path/to/some_process"
+```
+
 # License
 
 **`rootisnaked`** is distributed under the terms of the [AGPL3](./LICENSE) license.
