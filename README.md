@@ -18,6 +18,9 @@
 - [Running `rootisnaked`](#running-rootisnaked)
   - [Install system dependencies](#install-system-dependencies)
   - [Compile and run](#compile-and-run)
+  - [Using docker](#using-docker)
+- [Simulate](#simulate)
+- [What's next?](#whats-next)
 - [License](#license)
 <!-- END OF TOC -->
 
@@ -76,7 +79,7 @@ docker run -it --rm --name rootisnaked --privileged rootisnaked/rootisnaked:late
 # Simulate
 
 ```bash
-sudo su - 
+sudo su -
 sudo capsh --add=cap_sys_admin=eip --command="/path/to/some_process"
 ```
 
