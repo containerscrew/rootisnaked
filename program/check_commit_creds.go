@@ -68,17 +68,16 @@ func GetCommitCreds(log *devstdout.CustomLogger) {
 
 		// Log the event.
 
-		if cmdLine == "" {
-			log.Info("uid changed or capabilities changed for process",
-				devstdout.Argument("pid", event.Tgid),
-				devstdout.Argument("exe_path", exePath),
-				devstdout.Argument("cmd_line", cmdLine),
-				devstdout.Argument("user", utils.GetUserFromID(int(event.OldUid))),
-				devstdout.Argument("old_uid", event.OldUid),
-				devstdout.Argument("new_uid", event.NewUid),
-				devstdout.Argument("old_caps", utils.DecodeCapabilities(event.OldCaps)),
-				devstdout.Argument("new_caps", utils.DecodeCapabilities(event.NewCaps)),
-			)
-		}
+		log.Info("uid changed or capabilities changed for process",
+			devstdout.Argument("pid", event.Tgid),
+			devstdout.Argument("exe_path", exePath),
+			devstdout.Argument("cmd_line", cmdLine),
+			devstdout.Argument("user", utils.GetUserFromID(int(event.OldUid))),
+			devstdout.Argument("old_uid", event.OldUid),
+			devstdout.Argument("new_uid", event.NewUid),
+			devstdout.Argument("old_caps", utils.DecodeCapabilities(event.OldCaps)),
+			devstdout.Argument("new_caps", utils.DecodeCapabilities(event.NewCaps)),
+		)
+
 	}
 }

@@ -33,10 +33,10 @@ It can be used, for example, to detect possible Linux privilege escalation.
 
 To extend this tool, you probably need to detect:
 
-- Gaining capabilities (CAP_SYS_ADMIN...)
-- Changing group IDS (gid)
-- Manipulating file permissions (`chmod`, `setuid`...)
-- Track parent process ID (ppid) and process hierarchy
+- Gaining capabilities (CAP_SYS_ADMIN...): Right now it shows when the capabilities of a process change
+- Changing group IDS (gid): no timplemented
+- Manipulating file permissions (`chmod`, `setuid`...): not implemented
+- Track parent process ID (ppid) and process hierarchy: not implemented
 - Others
 
 # Running `rootisnaked`
