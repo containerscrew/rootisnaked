@@ -26,6 +26,10 @@
 
 ![example](example.png)
 
+```markdown
+[2025-02-01 19:16:16] INFO uid changed or capabilities changed for process new_caps=[CAP_NET_RAW CAP_SYS_MODULE ......] pid=206493 exe_path=/usr/bin/sudo cmd_line=sudo su -  user=dcr old_uid=1000 new_uid=0 old_caps=[CAP_NET_RAW CAP_SYS_MODULE .....]
+```
+
 `Rootisnaked` is a simple [eBPF](https://ebpf.io/) program designed to monitor changes in user credentials (specifically, the UID) on a Linux system. It hooks into the `commit_creds` kernel function, which is called when a process's credentials are updated. The program detects when a process's UID changes to 0 (root) and logs this event to a ring buffer for further analysis in user space.
 It can be used, for example, to detect possible Linux privilege escalation.
 
