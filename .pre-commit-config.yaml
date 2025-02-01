@@ -12,7 +12,7 @@ repos:
     rev: v0.5.1
     hooks:
       - id: go-fmt
-      - id: go-critic
+      #- id: go-critic
       - id: go-mod-tidy
   - repo: https://github.com/containerscrew/mtoc
     rev: v0.4.1

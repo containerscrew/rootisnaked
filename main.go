@@ -7,7 +7,7 @@ import (
 
 func main() {
 	log := devstdout.NewLogger(
-		devstdout.OptionsLogger{Level: "info", AddSource: false, LoggerType: "console"},
+		devstdout.OptionsLogger{Level: "info", AddSource: false, LoggerType: "pretty"},
 	)
 
 	log.Success("Starting rootisnaked...")

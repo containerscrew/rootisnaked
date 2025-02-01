@@ -19,6 +19,8 @@ struct event {
     pid_t tgid;       // Thread group ID (process ID) of the task
     u32 old_uid;      // Original UID before the change
     u32 new_uid;      // New UID after the change
+    u64 old_caps;     // Old effective capabilities
+    u64 new_caps;     // New effective capabilities
 };
 
 // Define a ring buffer map to pass events from kernel to user space
@@ -39,6 +41,7 @@ int commit_creds(struct pt_regs *regs)
     const struct cred *old_cred, *new_cred; // Old and new credentials
     struct event *data; // Pointer to the event data structure
     kuid_t old_uid, new_uid; // Old and new UIDs
+    u64 old_caps, new_caps; // Old and new effective capabilities
 
     // Get the new credentials from the first argument of `commit_creds`
     new_cred = (struct cred*)PT_REGS_PARM1(regs);
@@ -58,8 +61,13 @@ int commit_creds(struct pt_regs *regs)
     old_uid = BPF_CORE_READ(old_cred, uid); // Read old UID
     new_uid = BPF_CORE_READ(new_cred, uid); // Read new UID
 
+    // Read the old and new effective capabilities
+    old_caps = BPF_CORE_READ(old_cred, cap_effective.val);
+    new_caps = BPF_CORE_READ(new_cred, cap_effective.val);
+
     // Check if the new UID is 0 (root) and the old UID was greater than 0 (non-root)
-    if (new_uid.val == 0 && old_uid.val > 0) {
+    // OR if the process gains new capabilities
+    if ((new_uid.val == 0 && old_uid.val > 0) || (new_caps != old_caps)) {
         // Reserve space in the ring buffer for the event data
         data = bpf_ringbuf_reserve(&events, sizeof(struct event), 0);
         if (!data) {
@@ -72,6 +80,8 @@ int commit_creds(struct pt_regs *regs)
         data->tgid = BPF_CORE_READ(task, tgid); // Get the process ID
         data->old_uid = old_uid.val;            // Store the old UID
         data->new_uid = new_uid.val;            // Store the new UID
+        data->old_caps = old_caps;              // Store the old capabilities
+        data->new_caps = new_caps;              // Store the new capabilities
 
         // Submit the event to the ring buffer for user space to process
         bpf_ringbuf_submit(data, 0);

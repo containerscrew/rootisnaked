@@ -5,9 +5,9 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+
 	devstdout "github.com/containerscrew/devstdout/pkg"
-	"os"
-	"strings"
+	"github.com/containerscrew/rootisnaked/utils"
 
 	"github.com/cilium/ebpf/link"
 	"github.com/cilium/ebpf/ringbuf"
@@ -15,27 +15,6 @@ import (
 )
 
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target amd64 -type event -tags linux bpf check_commit_creds.bpf.c -- -I../headers
-
-// Function to read process executable path
-func getExecutablePath(pid int32) string {
-	path := fmt.Sprintf("/proc/%d/exe", pid)
-	exePath, err := os.Readlink(path)
-	if err != nil {
-		return "unknown"
-	}
-	return exePath
-}
-
-// Function to read full command line
-func getCommandLine(pid int32) string {
-	path := fmt.Sprintf("/proc/%d/cmdline", pid)
-	data, err := os.ReadFile(path)
-	if err != nil {
-		return "unknown"
-	}
-	// Replace null characters with spaces to reconstruct the full command line
-	return strings.ReplaceAll(string(data), "\x00", " ")
-}
 
 func GetCommitCreds(log *devstdout.CustomLogger) {
 	// Name of the kernel function to trace.
@@ -84,16 +63,21 @@ func GetCommitCreds(log *devstdout.CustomLogger) {
 		}
 
 		// Fetch additional process details
-		exePath := getExecutablePath(event.Tgid)
-		cmdLine := getCommandLine(event.Tgid)
+		exePath := utils.GetExecutablePath(event.Tgid)
+		cmdLine := utils.GetCommandLine(event.Tgid)
 
-		if cmdLine != "" {
-			log.Info("Root privilege escalation detected",
+		// Log the event.
+
+		if cmdLine == "" {
+			log.Info("uid changed or capabilities changed for process",
 				devstdout.Argument("pid", event.Tgid),
 				devstdout.Argument("exe_path", exePath),
 				devstdout.Argument("cmd_line", cmdLine),
+				devstdout.Argument("user", utils.GetUserFromID(int(event.OldUid))),
 				devstdout.Argument("old_uid", event.OldUid),
 				devstdout.Argument("new_uid", event.NewUid),
+				devstdout.Argument("old_caps", utils.DecodeCapabilities(event.OldCaps)),
+				devstdout.Argument("new_caps", utils.DecodeCapabilities(event.NewCaps)),
 			)
 		}
 	}
