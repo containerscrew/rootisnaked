@@ -14,6 +14,21 @@ import (
 
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go -type event -tags linux bpf ./check_file_permissions.bpf.c -- -I../../headers
 
+func formatMode(mode uint32) string {
+	return fmt.Sprintf("%04o", mode&0o777) // Mask only the permission bits
+}
+
+func formatFilename(filename [256]int8) string {
+	// Convert int8 array to byte slice
+	byteSlice := make([]byte, len(filename))
+	for i, b := range filename {
+		byteSlice[i] = byte(b) // Cast int8 to byte
+	}
+
+	// Trim null bytes and return as string
+	return string(bytes.Trim(byteSlice, "\x00"))
+}
+
 func FilePermissions(log *devstdout.CustomLogger) {
 	// Allow the current process to lock memory for eBPF resources.
 	if err := rlimit.RemoveMemlock(); err != nil {
@@ -71,7 +86,7 @@ func FilePermissions(log *devstdout.CustomLogger) {
 		}
 
 		// Parse the ringbuf event entry into a bpfEvent structure.
-		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.BigEndian, &event); err != nil {
+		if err := binary.Read(bytes.NewBuffer(record.RawSample), binary.LittleEndian, &event); err != nil {
 			log.Warning("parsing ringbuf event: %s", err)
 			continue
 		}
@@ -82,10 +97,12 @@ func FilePermissions(log *devstdout.CustomLogger) {
 			continue
 		}
 
-		log.Info("file changed",
+		log.Info("file permission changed",
 			devstdout.Argument("command", comm),
 			devstdout.Argument("pid", event.Pid),
 			devstdout.Argument("uid", event.Uid),
+			devstdout.Argument("file", formatFilename(event.Filename)),
+			devstdout.Argument("mode", formatMode(event.Mode)),
 		)
 	}
 }
