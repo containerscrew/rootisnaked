@@ -31,4 +31,5 @@ rootisnaked
 
 # Do not push go-generates
 *_bpfel*
+*.o
 headers/vmlinux.h
