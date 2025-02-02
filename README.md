@@ -90,6 +90,7 @@ sudo capsh --caps="cap_sys_admin+eip" -- -c "/path/to/some_process"
 # What's next?
 
 - Implement more features
+- Log too much verbose when capabilities changes
 - Send notifications to systray (notify-send)
 - Implement testing
 - Others

@@ -2,7 +2,7 @@ package main
 
 import (
 	devstdout "github.com/containerscrew/devstdout/pkg"
-	"github.com/containerscrew/rootisnaked/program"
+	commitcreds "github.com/containerscrew/rootisnaked/program/commit_creds"
 )
 
 func main() {
@@ -12,5 +12,8 @@ func main() {
 
 	log.Success("Starting rootisnaked...")
 
-	program.GetCommitCreds(log)
+	// Running multiple programs probabnly will need to implement a way to run them in a go routine
+	commitcreds.GetCommitCreds(log)
+
+	// filepermissions.FilePermissions(log)
 }

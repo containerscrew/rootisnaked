@@ -1,4 +1,4 @@
-package program
+package commitcreds
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 	"github.com/cilium/ebpf/rlimit"
 )
 
-//go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target amd64 -type event -tags linux bpf check_commit_creds.bpf.c -- -I../headers
+//go:generate go run github.com/cilium/ebpf/cmd/bpf2go -target amd64 -type event -tags linux bpf check_commit_creds.bpf.c -- -I../../headers
 
 func GetCommitCreds(log *devstdout.CustomLogger) {
 	// Name of the kernel function to trace.

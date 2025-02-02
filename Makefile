@@ -25,12 +25,11 @@ go-generate: ## Run go generate
 gen-vmlinux: ## Generate vmlinux.h headers
 	sudo bpftool btf dump file /sys/kernel/btf/vmlinux format c > headers/vmlinux.h
 
-run: go-generate update-deps ## Run the application
+run: gen-vmlinux go-generate update-deps ## Run the application
 	CGO_ENABLED=0 GOARCH=$(GOARCH) sudo go run main.go
 
 build-run: gen-vmlinux go-generate update-deps ## Run the application
 	CGO_ENABLED=0 GOARCH=$(GOARCH) go build && sudo ./rootisnaked
-
 
 remote-sync: ## Sync this repository to remote machine using rsync.
 	rsync -avzh --exclude='.git/' $(shell pwd)/ $(USER)@$(IP):/home/$(USER)/rootisnaked
