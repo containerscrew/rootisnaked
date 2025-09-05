@@ -1,7 +1,7 @@
 // include/event.h
 #pragma once
 
-#ifdef __BPF__  // compiling with -target bpf
+#ifdef __BPF__ // compiling with -target bpf
 // No std headers here; vmlinux.h must be included BEFORE this header in .bpf.c
 // and it defines __u32/__u64 already.
 typedef __u32 u32c;

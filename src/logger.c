@@ -12,7 +12,7 @@ LogLevel global_log_level = LOG_LEVEL_INFO;
 
 void set_log_level(LogLevel level) { global_log_level = level; }
 
-LogLevel parse_log_level(const char *level_str) {
+LogLevel parse_log_level(const char* level_str) {
   if (strcmp(level_str, "info") == 0) {
     return LOG_LEVEL_INFO;
   } else if (strcmp(level_str, "warning") == 0) {
@@ -25,35 +25,35 @@ LogLevel parse_log_level(const char *level_str) {
   }
 }
 
-static void log_message(char *level, const char *message) {
+static void log_message(char* level, const char* message) {
   time_t now;
   time(&now);
-  struct tm *timeinfo = localtime(&now);
+  struct tm* timeinfo = localtime(&now);
 
   // Custom datetime format
-  char time_str[64];  // Buffer to hold the formatted time
+  char time_str[64]; // Buffer to hold the formatted time
   strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", timeinfo);
 
   switch (*level) {
-    case 'i':
-      printf(GREEN "%s [INFO]: %s\n" RESET, time_str, message);
-      break;
-    case 'w':
-      printf(YELLOW "%s [WARNING]: %s\n" RESET, time_str, message);
-      break;
-    case 'e':
-      printf(RED "%s [ERROR]: %s\n" RESET, time_str, message);
-      break;
-    default:
-      printf("%s [UNKNOWN]: Unknown log level. See usage below%s\n\n", time_str,
-             level);
-      exit(1);
+  case 'i':
+    printf(GREEN "%s [INFO]: %s\n" RESET, time_str, message);
+    break;
+  case 'w':
+    printf(YELLOW "%s [WARNING]: %s\n" RESET, time_str, message);
+    break;
+  case 'e':
+    printf(RED "%s [ERROR]: %s\n" RESET, time_str, message);
+    break;
+  default:
+    printf("%s [UNKNOWN]: Unknown log level. See usage below%s\n\n", time_str,
+           level);
+    exit(1);
   }
 }
 
 // Helper function to handle formatted logging
 // Helper function to handle formatted logging (sin truncados)
-static void log_formatted_message(char *level, const char *message,
+static void log_formatted_message(char* level, const char* message,
                                   va_list args) {
   va_list ap1, ap2;
   va_copy(ap1, args);
@@ -68,7 +68,7 @@ static void log_formatted_message(char *level, const char *message,
   }
 
   size_t sz = (size_t)needed + 1;
-  char *formatted_message = (char *)malloc(sz);
+  char* formatted_message = (char*)malloc(sz);
   if (!formatted_message) {
     log_message(level, "log oom");
     va_end(ap2);
@@ -82,7 +82,7 @@ static void log_formatted_message(char *level, const char *message,
   free(formatted_message);
 }
 
-void log_info(const char *message, ...) {
+void log_info(const char* message, ...) {
   if (global_log_level <= LOG_LEVEL_INFO) {
     va_list args;
     va_start(args, message);
@@ -91,7 +91,7 @@ void log_info(const char *message, ...) {
   }
 }
 
-void log_warning(const char *message, ...) {
+void log_warning(const char* message, ...) {
   if (global_log_level <= LOG_LEVEL_WARNING) {
     va_list args;
     va_start(args, message);
@@ -100,7 +100,7 @@ void log_warning(const char *message, ...) {
   }
 }
 
-void log_error(const char *message, ...) {
+void log_error(const char* message, ...) {
   if (global_log_level <= LOG_LEVEL_ERROR) {
     va_list args;
     va_start(args, message);

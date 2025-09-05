@@ -19,12 +19,12 @@ static void sig_handler(int sig) {
   exiting = true;
 }
 
-static int _libbpf_print_fn(enum libbpf_print_level level, const char *format,
+static int _libbpf_print_fn(enum libbpf_print_level level, const char* format,
                             va_list args) {
   return vfprintf(stderr, format, args);
 }
 
-static int handle_event(void *ctx, void *data, size_t size) {
+static int handle_event(void* ctx, void* data, size_t size) {
   if (!data) {
     fprintf(stderr, "Error: Data pointer is NULL\n");
     return -1;
@@ -36,10 +36,10 @@ static int handle_event(void *ctx, void *data, size_t size) {
     return -1;
   }
 
-  struct event *e = (struct event *)data;
+  struct event* e = (struct event*)data;
 
-  char *old_caps_str = caps_to_string(e->old_caps);
-  char *new_caps_str = caps_to_string(e->new_caps);
+  char* old_caps_str = caps_to_string(e->old_caps);
+  char* new_caps_str = caps_to_string(e->new_caps);
 
   log_info("event: tgid=%u, old_uid=%u, new_uid=%u, old_caps=%s, new_caps=%s\n",
            e->tgid, e->old_uid, e->new_uid, old_caps_str, new_caps_str);
@@ -49,9 +49,9 @@ static int handle_event(void *ctx, void *data, size_t size) {
   return 0;
 }
 
-static struct bpf_program *find_program(struct bpf_object *obj,
-                                        const char *name) {
-  struct bpf_program *prog = bpf_object__find_program_by_name(obj, name);
+static struct bpf_program* find_program(struct bpf_object* obj,
+                                        const char* name) {
+  struct bpf_program* prog = bpf_object__find_program_by_name(obj, name);
   if (!prog) {
     fprintf(stderr, "Failed to find eBPF program '%s'\n", name);
   }
@@ -59,13 +59,13 @@ static struct bpf_program *find_program(struct bpf_object *obj,
 }
 
 int main(void) {
-  struct bpf_object *obj;
+  struct bpf_object* obj;
   int err;
-  struct bpf_program *prog;
-  struct bpf_link *link;
+  struct bpf_program* prog;
+  struct bpf_link* link;
   int mapfd;
-  struct ring_buffer *ring_buffer;
-  const char *bpf_file = "build/rootisnaked.bpf.o";
+  struct ring_buffer* ring_buffer;
+  const char* bpf_file = "build/rootisnaked.bpf.o";
 
   // Ensure the program is run as root
   if (geteuid() != 0) {

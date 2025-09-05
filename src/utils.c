@@ -5,7 +5,7 @@
 
 struct cap_entry {
   uint64_t bit;
-  const char *name;
+  const char* name;
 };
 
 static const struct cap_entry cap_table[] = {
@@ -48,8 +48,8 @@ static const struct cap_entry cap_table[] = {
 };
 #define CAP_TABLE_SIZE (sizeof(cap_table) / sizeof(cap_table[0]))
 
-const char **decode_capabilities(uint64_t mask) {
-  const char **arr = malloc((CAP_TABLE_SIZE + 1) * sizeof(char *));
+const char** decode_capabilities(uint64_t mask) {
+  const char** arr = malloc((CAP_TABLE_SIZE + 1) * sizeof(char*));
   if (!arr) return NULL;
   int count = 0;
   for (size_t i = 0; i < CAP_TABLE_SIZE; i++)
@@ -58,8 +58,8 @@ const char **decode_capabilities(uint64_t mask) {
   return arr;
 }
 
-char *caps_to_string(uint64_t mask) {
-  const char **caps = decode_capabilities(mask);
+char* caps_to_string(uint64_t mask) {
+  const char** caps = decode_capabilities(mask);
   if (!caps) return strdup("<error>");
   if (!caps[0]) {
     free(caps);
@@ -67,10 +67,10 @@ char *caps_to_string(uint64_t mask) {
   }
 
   // Paso 1: calcular tamaño
-  size_t needed = 1;                                            // '\0'
-  for (int i = 0; caps[i]; i++) needed += strlen(caps[i]) + 1;  // +1 por coma
+  size_t needed = 1;                                           // '\0'
+  for (int i = 0; caps[i]; i++) needed += strlen(caps[i]) + 1; // +1 por coma
   // Paso 2: construir
-  char *out = malloc(needed);
+  char* out = malloc(needed);
   if (!out) {
     free(caps);
     return strdup("<oom>");
