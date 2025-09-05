@@ -1,0 +1,45 @@
+name: Build 🐛
+
+on:
+  pull_request:
+  push:
+    paths:
+        - '**.c'
+        - '**.h'
+        - '.github/workflows/build.yml'
+    branches:
+        - '**'
+
+
+jobs:
+  build:
+    name: Build for ${{ matrix.platform.release_for }}
+    strategy:
+      matrix:
+        platform:
+          - release_for: linux-arm64
+            os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+
+          - release_for: linux-amd64
+            os: ubuntu-24.04
+            target: x86_64-unknown-linux-gnu
+
+    runs-on: ${{ matrix.platform.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: System dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install linux-headers-$(uname -r) make clang libbpf-dev bpftool
+
+      - name: Build BPF object
+        run: |
+          make
+
+      - name: Test package zip
+        run: |
+          TAG_NAME=$(echo "${{ github.ref }}" | sed 's|.*/||')
+          zip -j rootisnaked-${{ matrix.platform.release_for }}-${{ env.TAG_NAME }}.zip bin/rootisnaked

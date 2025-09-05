@@ -1,0 +1,30 @@
+images:
+  - location: "https://cloud-images.ubuntu.com/releases/oracular/release/ubuntu-24.10-server-cloudimg-amd64.img"
+    arch: "x86_64"
+  - location: "https://cloud-images.ubuntu.com/releases/oracular/release/ubuntu-24.10-server-cloudimg-arm64.img"
+    arch: "aarch64"
+
+user:
+  name: "ebpf"
+
+mounts:
+  - location: "~/Documents/Code/Personal/rootisnaked"
+    writable: true
+
+memory: "2GiB"
+cpus: 2
+disk: "15GiB"
+
+provision:
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      apt update -y
+      apt install -y vim gcc make clang bpftool bpftrace linux-headers-$(uname -r) libbpf-dev
+
+  - mode: user
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      echo "Nothing to do by the moment :)"

@@ -1,5 +1,4 @@
 <p align="center" >
-    <img src="logo.png" alt="logo" width="250"/>
 <h3 align="center">rootisnaked</h3>
 <p align="center">Simple root privilege escalation detection using eBPF</p>
 </p>
@@ -9,6 +8,10 @@
     <img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/containerscrew/rootisnaked">
     <img alt="GitHub go.mod Go version" src="https://img.shields.io/github/go-mod/go-version/containerscrew/rootisnaked">
 </p>
+
+---
+
+> Rootisnaked was initially created using [ebpf-go](github.com/cilium/ebpf). The project actually used [libbpf](https://github.com/libbpf/libbpf) (kernel and user space code written in C). You can find the old version [here](https://github.com/containerscrew/rootisnaked/tree/rootisnaked-go). There is no reason to use C instead of Go, it's a personal preference to practice C and libbpf.
 
 # rootisnaked
 

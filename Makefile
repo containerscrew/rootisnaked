@@ -1,35 +1,72 @@
-SHELL:=/bin/sh
-.PHONY: all
+# Compiler Settings
+CC=gcc -Wunused-variable -lbpf -ldl
+CFLAGS=-c -Wall -Iinclude -MMD -Wunused-but-set-variable
+SRCDIR=src
+OBJDIR=build
+BINDIR=bin
+EXE=$(BINDIR)/rootisnaked
+TESTS_DIR=tests
+INCLUDE_DIR=include
 
-app_name="rootisnaked"
+# Source Files
+SOURCES=$(wildcard $(SRCDIR)/*.c)  # Dynamically find all .c files in src/
+OBJ=$(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SOURCES))  # Map .c files to .o files
+DEPFILES=$(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.d, $(SOURCES))  # Generate .d files for dependencies
 
-help: ## this help
-	@awk 'BEGIN {FS = ":.*?## ";  printf "Usage:\n  make \033[36m<target> \033[0m\n\nTargets:\n"} /^[a-zA-Z0-9_-]+:.*?## / {gsub("\\\\n",sprintf("\n%22c",""), $$2);printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+# eBPF Program
+BPF_SOURCE=$(SRCDIR)/kernel/rootisnaked.bpf.c
+BPF_OBJ=$(OBJDIR)/rootisnaked.bpf.o
 
-update-deps: ## Update dependencies
-	go get -u ;\
-	go mod tidy
+# Compiler settings
+LINTER := clang-tidy
+FORMATTER := clang-format
 
-mtoc: ## Create table of contents with mtoc
-	mtoc
+# Detect architecture automatically
+ARCH := $(shell uname -m)
 
-run-pre-commit: ## Run pre-commit locally
-	pre-commit run -a
+# Map architecture to BPF target names
+ifeq ($(ARCH),x86_64)
+    ARCH_BPF = x86
+else ifeq ($(ARCH),aarch64)
+    ARCH_BPF = arm64
+else ifeq ($(ARCH),armv7l)
+    ARCH_BPF = arm
+else
+    $(error Unsupported architecture: $(ARCH))
+endif
 
-# generate-changelog: ## Generate changelog
-# 	git cliff -o CHANGELOG.md
+# Targets
+all: format $(BPF_OBJ) $(EXE)
 
-go-generate: ## Run go generate
-	go generate ./...
+# Compile Executable
+$(EXE): $(OBJ)
+	@mkdir -p $(BINDIR)
+	$(CC) $(OBJ) -o $@
 
-gen-vmlinux: ## Generate vmlinux.h headers
-	sudo bpftool btf dump file /sys/kernel/btf/vmlinux format c > headers/vmlinux.h
+# Compile Object Files
+$(OBJDIR)/%.o: $(SRCDIR)/%.c
+	@mkdir -p $(OBJDIR)
+	$(CC) $(CFLAGS) $< -o $@
 
-run: gen-vmlinux go-generate update-deps ## Run the application
-	CGO_ENABLED=0 GOARCH=$(GOARCH) sudo go run main.go
+# Compile eBPF Object File
+$(BPF_OBJ): $(BPF_SOURCE)
+	@mkdir -p $(OBJDIR)
+	clang -O2 -g -target bpf -D__TARGET_ARCH_$(ARCH_BPF) -I$(INCLUDE_DIR)/ -c $< -o $@
 
-build-run: gen-vmlinux go-generate update-deps ## Run the application
-	CGO_ENABLED=0 GOARCH=$(GOARCH) go build && sudo ./rootisnaked
+# Include dependency files
+-include $(DEPFILES)
 
-remote-sync: ## Sync this repository to remote machine using rsync.
-	rsync -avzh --exclude='.git/' $(shell pwd)/ $(USER)@$(IP):/home/$(USER)/rootisnaked
+# Run formatter on source and header files
+format:
+	@$(FORMATTER) -i $(SRCDIR)/*.c $(INCLUDE_DIR)/*.h
+
+# Run linter on source and header files
+lint:
+	@$(LINTER) --config-file=.clang-tidy $(SRCDIR)/*.c $(INCLUDE_DIR)/*.h -- $(CFLAGS)
+
+gen-vmlinux: ## Generate vmlinux.h
+	bpftool btf dump file /sys/kernel/btf/vmlinux format c > include/vmlinux.h
+
+# Clean up
+clean:
+	rm -rf $(OBJDIR) $(BINDIR)
