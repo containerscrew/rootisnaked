@@ -33,7 +33,8 @@ jobs:
       - name: System dependencies
         run: |
           sudo apt-get update
-          sudo apt-get -y install linux-headers-$(uname -r) make clang libbpf-dev bpftool
+          sudo apt search bpftool
+          sudo apt-get -y install linux-headers-$(uname -r) make clang libbpf-dev
 
       - name: Build BPF object
         run: |
