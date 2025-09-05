@@ -34,7 +34,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt search bpftool
-          sudo apt-get -y install linux-headers-$(uname -r) make clang libbpf-dev
+          sudo apt-get -y install linux-headers-$(uname -r) make clang libbpf-dev clang-tools
 
       - name: Build BPF object
         run: |
