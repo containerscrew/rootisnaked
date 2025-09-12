@@ -1,6 +1,10 @@
 # Compiler Settings
-CC=gcc -Wunused-variable -lbpf -lcurl -ldl
-CFLAGS=-c -Wall -Iinclude -MMD -Wunused-but-set-variable
+CC = gcc
+# Incluye includes y cflags de pkg-config en CPPFLAGS (no en CFLAGS)
+CPPFLAGS += -Iinclude $(shell pkg-config --cflags libbpf libcurl)
+CFLAGS   += -Wall -MMD -Wunused-but-set-variable
+LDLIBS   += $(shell pkg-config --libs libbpf libcurl) -ldl
+
 SRCDIR=src
 OBJDIR=build
 BINDIR=bin
@@ -9,9 +13,9 @@ TESTS_DIR=tests
 INCLUDE_DIR=include
 
 # Source Files
-SOURCES=$(wildcard $(SRCDIR)/*.c)  # Dynamically find all .c files in src/
-OBJ=$(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SOURCES))  # Map .c files to .o files
-DEPFILES=$(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.d, $(SOURCES))  # Generate .d files for dependencies
+SOURCES=$(wildcard $(SRCDIR)/*.c)
+OBJ=$(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.o, $(SOURCES))
+DEPFILES=$(patsubst $(SRCDIR)/%.c, $(OBJDIR)/%.d, $(SOURCES))
 
 # eBPF Program
 BPF_SOURCE=$(SRCDIR)/kernel/rootisnaked.bpf.c
@@ -38,15 +42,15 @@ endif
 # Targets
 all: format $(BPF_OBJ) $(EXE)
 
-# Compile Executable
+# Compile Executable (link)
 $(EXE): $(OBJ)
 	@mkdir -p $(BINDIR)
-	$(CC) $(OBJ) -o $@
+	$(CC) $(OBJ) $(LDLIBS) -o $@
 
 # Compile Object Files
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	@mkdir -p $(OBJDIR)
-	$(CC) $(CFLAGS) $< -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 # Compile eBPF Object File
 $(BPF_OBJ): $(BPF_SOURCE)
@@ -62,7 +66,7 @@ format:
 
 # Run linter on source and header files
 lint:
-	@$(LINTER) --config-file=.clang-tidy $(SRCDIR)/*.c $(INCLUDE_DIR)/*.h -- $(CFLAGS)
+	@$(LINTER) --config-file=.clang-tidy $(SRCDIR)/*.c $(INCLUDE_DIR)/*.h -- $(CPPFLAGS) $(CFLAGS)
 
 gen-vmlinux: ## Generate vmlinux.h
 	bpftool btf dump file /sys/kernel/btf/vmlinux format c > include/vmlinux.h

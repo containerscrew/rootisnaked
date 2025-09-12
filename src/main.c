@@ -91,6 +91,13 @@ int main(void) {
   int mapfd;
   struct ring_buffer* ring_buffer = NULL;
   const char* bpf_file = "build/rootisnaked.bpf.o";
+  if (access(bpf_file, R_OK) != 0) {
+    bpf_file = "/usr/local/share/rootisnaked/rootisnaked.bpf.o";
+    if (access(bpf_file, R_OK) != 0) {
+      fprintf(stderr, "Could not find BPF object file in either location.\n");
+      return 1;
+    }
+  }
   const char* telegram_token = getenv("TELEGRAM_TOKEN");
   const char* chat_id = getenv("CHAT_ID");
   const char* debug = getenv("DEBUG") ? getenv("DEBUG") : "false";
