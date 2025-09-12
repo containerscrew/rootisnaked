@@ -74,14 +74,19 @@ make build-run GOARCH=amd64 # if using arm, GOARCH=arm64
 ## Using docker
 
 ```bash
-docker build -t rootisnaked/rootisnaked:latest .
+sudo docker build -t containerscrew/rootisnaked:latest .
 ```
 
 **eBPF code needs to be run under a privileged user.**
 
 ```bash
-docker run -it --rm --name rootisnaked --privileged rootisnaked/rootisnaked:latest
+sudo podman run -itd --restart always --name rootisnaked --privileged \
+  -e TELEGRAM_TOKEN="xxxxxx:xxxxx" \
+  -e CHAT_ID="xxxxxxx" \
+  containerscrew/rootisnaked:latest
 ```
+
+> Using `sudo` because I use podman rotless
 
 # Simulate
 
