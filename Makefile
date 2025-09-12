@@ -1,5 +1,5 @@
 # Compiler Settings
-CC=gcc -Wunused-variable -lbpf -ldl
+CC=gcc -Wunused-variable -lbpf -lcurl -ldl
 CFLAGS=-c -Wall -Iinclude -MMD -Wunused-but-set-variable
 SRCDIR=src
 OBJDIR=build

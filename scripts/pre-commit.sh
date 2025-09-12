@@ -10,3 +10,6 @@ pre-commit run -a --show-diff-on-failure
 
 separator "Running clang format "
 make format
+
+separator "Scanning for secrets"
+gitleaks dir -v

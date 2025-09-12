@@ -9,18 +9,28 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
+#include <curl/curl.h>
+#include "notify-telegram.h"
 #include "logger.h"
 
 static volatile bool exiting = false;
+
+// Run this:
+// export TELEGRAM_TOKEN="xxxxx";
+// export DEBUG=true; export CHAT_ID="xxxxx" ; sudo -E ./bin/rootisnaked
+
+struct app_ctx {
+  const char* token;
+  const char* chat_id;
+};
 
 static void sig_handler(int sig) {
   log_warning("Dettaching rootisnaked eBPF program, bye! Signal=%d\n", sig);
   exiting = true;
 }
 
-static int _libbpf_print_fn(enum libbpf_print_level level, const char* format,
-                            va_list args) {
+static int libbpf_print_fn(enum libbpf_print_level level, const char* format,
+                           va_list args) {
   return vfprintf(stderr, format, args);
 }
 
@@ -41,6 +51,21 @@ static int handle_event(void* ctx, void* data, size_t size) {
   char* old_caps_str = caps_to_string(e->old_caps);
   char* new_caps_str = caps_to_string(e->new_caps);
 
+  struct app_ctx* app = (struct app_ctx*)ctx;
+  const char* token = app ? app->token : NULL;
+  const char* chat_id = app ? app->chat_id : NULL;
+
+  if (!token || !*token || !chat_id || !*chat_id) {
+    fprintf(stderr,
+            "Warning: TELEGRAM_TOKEN or CHAT_ID missing; skipping send.\n");
+  } else {
+    int rc = telegram_send_message(token, chat_id,
+                                   "Alert: UID 0 privileges granted!");
+    if (rc != 0) {
+      fprintf(stderr, "Message failed (rc=%d)\n", rc);
+    }
+  }
+
   log_info("event: tgid=%u, old_uid=%u, new_uid=%u, old_caps=%s, new_caps=%s\n",
            e->tgid, e->old_uid, e->new_uid, old_caps_str, new_caps_str);
 
@@ -60,39 +85,59 @@ static struct bpf_program* find_program(struct bpf_object* obj,
 
 int main(void) {
   struct bpf_object* obj;
-  int err;
+  int err = 0;
   struct bpf_program* prog;
-  struct bpf_link* link;
+  struct bpf_link* link = NULL;
   int mapfd;
-  struct ring_buffer* ring_buffer;
+  struct ring_buffer* ring_buffer = NULL;
   const char* bpf_file = "build/rootisnaked.bpf.o";
+  const char* telegram_token = getenv("TELEGRAM_TOKEN");
+  const char* chat_id = getenv("CHAT_ID");
+  const char* debug = getenv("DEBUG") ? getenv("DEBUG") : "false";
+
+  // Init libcurl lo antes posible
+  if (curl_global_init(CURL_GLOBAL_DEFAULT) != 0) {
+    fprintf(stderr, "curl_global_init failed\n");
+    return 1;
+  }
+
+  struct app_ctx app = {
+      .token = telegram_token,
+      .chat_id = chat_id,
+  };
 
   // Ensure the program is run as root
   if (geteuid() != 0) {
     log_error(
         "You must run this program as root. Consider using sudo: $ sudo "
         "rootisnaked");
+    curl_global_cleanup();
     return 1;
   }
 
   log_info("Starting rootisnaked");
-  // libbpf_set_print(libbpf_print_fn);
+  if (debug && strcmp(debug, "true") == 0) {
+    libbpf_set_print(libbpf_print_fn);
+  }
 
   obj = bpf_object__open_file(bpf_file, NULL);
   if (libbpf_get_error(obj)) {
     fprintf(stderr, "Failed to open BPF object file: %s\n", bpf_file);
+    curl_global_cleanup();
     return 1;
   }
 
   if (bpf_object__load(obj)) {
     fprintf(stderr, "Error loading BPF object into the kernel\n");
     bpf_object__close(obj);
+    curl_global_cleanup();
     return 1;
   }
 
   prog = find_program(obj, "commit_creds");
   if (!prog) {
     bpf_object__close(obj);
+    curl_global_cleanup();
     return 1;
   }
 
@@ -111,7 +156,7 @@ int main(void) {
     goto cleanup;
   }
 
-  ring_buffer = ring_buffer__new(mapfd, handle_event, NULL, NULL);
+  ring_buffer = ring_buffer__new(mapfd, handle_event, &app, NULL);
   if (!ring_buffer) {
     fprintf(stderr, "Failed to create ring buffer\n");
     goto cleanup;
@@ -120,14 +165,20 @@ int main(void) {
   signal(SIGINT, sig_handler);
   signal(SIGTERM, sig_handler);
 
+  log_info("eBPF program loaded and attached. Waiting for events...");
+
   while (!exiting) {
     ring_buffer__poll(ring_buffer, 1000);
   }
 
 cleanup:
+  if (ring_buffer) {
+    ring_buffer__free(ring_buffer);
+  }
   if (link) {
     bpf_link__destroy(link);
   }
   bpf_object__close(obj);
+  curl_global_cleanup();
   return err;
 }

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 
 struct cap_entry {
   uint64_t bit;
@@ -83,3 +84,41 @@ char* caps_to_string(uint64_t mask) {
   free(caps);
   return out;
 }
+
+// Auxiliary function to load variables from a .env file
+// int load_env_file(const char* filename) {
+//   FILE* file = fopen(filename, "r");
+//   if (!file) {
+//     perror("Error opening .env file");
+//     return -1;
+//   }
+
+//   char line[512];
+//   while (fgets(line, sizeof(line), file)) {
+//     // Ignore comments and empty lines
+//     if (line[0] == '#' || line[0] == '\n') {
+//       continue;
+//     }
+
+//     // Remove trailing newline
+//     line[strcspn(line, "\n")] = 0;
+
+//     // Split into key and value
+//     char* equals = strchr(line, '=');
+//     if (!equals) {
+//       continue; // skip invalid line
+//     }
+
+//     *equals = '\0';
+//     char* key = line;
+//     char* value = equals + 1;
+
+//     // Set environment variable
+//     if (setenv(key, value, 1) != 0) {
+//       perror("Error setting environment variable");
+//     }
+//   }
+
+//   fclose(file);
+//   return 0;
+// }
