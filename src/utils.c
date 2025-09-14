@@ -1,4 +1,7 @@
+#define _GNU_SOURCE
+
 #include "utils.h"
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -83,6 +86,68 @@ char* caps_to_string(uint64_t mask) {
   }
   free(caps);
   return out;
+}
+
+#define PATH_MAX_LEN 4096
+
+char* GetExecutablePath(__pid_t pid) {
+  static char exePath[PATH_MAX_LEN];
+  char path[64];
+  size_t len;
+
+  // Build /proc/<pid>/exe path
+  snprintf(path, sizeof(path), "/proc/%d/exe", pid);
+
+  // Read symlink
+  len = readlink(path, exePath, sizeof(exePath) - 1);
+  if (len == -1) {
+    // Error: return "unknown"
+    strncpy(exePath, "unknown", sizeof(exePath));
+    exePath[sizeof(exePath) - 1] = '\0';
+    return exePath;
+  }
+
+  // Null-terminate
+  exePath[len] = '\0';
+  return exePath;
+}
+
+#define CMDLINE_MAX_LEN 8192
+
+char* GetCommandLine(__pid_t pid) {
+  static char cmdline[CMDLINE_MAX_LEN];
+  char path[64];
+  FILE* f;
+  size_t len;
+
+  snprintf(path, sizeof(path), "/proc/%d/cmdline", pid);
+
+  f = fopen(path, "r");
+  if (!f) {
+    strncpy(cmdline, "unknown", sizeof(cmdline));
+    cmdline[sizeof(cmdline) - 1] = '\0';
+    return cmdline;
+  }
+
+  len = fread(cmdline, 1, sizeof(cmdline) - 1, f);
+  fclose(f);
+
+  if (len == 0) {
+    strncpy(cmdline, "unknown", sizeof(cmdline));
+    cmdline[sizeof(cmdline) - 1] = '\0';
+    return cmdline;
+  }
+
+  cmdline[len] = '\0';
+
+  // Replace null characters ('\0') with spaces
+  for (size_t i = 0; i < len; i++) {
+    if (cmdline[i] == '\0') {
+      cmdline[i] = ' ';
+    }
+  }
+
+  return cmdline;
 }
 
 // Auxiliary function to load variables from a .env file

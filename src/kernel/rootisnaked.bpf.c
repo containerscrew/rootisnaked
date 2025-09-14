@@ -3,17 +3,18 @@
 #include <bpf/bpf_core_read.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
+#include <linux/version.h>
 
 char LICENSE[] SEC("license") = "Dual BSD/GPL";
-__u32 __version SEC("version") = 0;
+__u32 __version SEC("version") = LINUX_VERSION_CODE;
 
 struct {
   __uint(type, BPF_MAP_TYPE_RINGBUF);
-  __uint(max_entries, 1 << 24);  // 16MB ring buffer size
+  __uint(max_entries, 1 << 24); // 16MB ring buffer size
 } events SEC(".maps");
 
 /* Portable read of kernel_cap_t into u64 without assuming .cap[] exists */
-static __always_inline u64 read_caps(const struct cred *c) {
+static __always_inline u64 read_caps(const struct cred* c) {
   u64 out = 0;
 
   /* Fast path: kernels where cap_effective has a .val member (u64) */
@@ -37,14 +38,14 @@ static __always_inline u64 read_caps(const struct cred *c) {
 }
 
 SEC("fentry/commit_creds")
-int BPF_PROG(commit_creds, const struct cred *new_cred) {
-  const struct task_struct *task;
-  const struct cred *old_cred;
-  struct event *data;
+int BPF_PROG(commit_creds, const struct cred* new_cred) {
+  const struct task_struct* task;
+  const struct cred* old_cred;
+  struct event* data;
 
   if (!new_cred) return 0;
 
-  task = (const struct task_struct *)bpf_get_current_task();
+  task = (const struct task_struct*)bpf_get_current_task();
   if (!task) return 0;
 
   if (bpf_core_read(&old_cred, sizeof(old_cred), &task->cred)) return 0;
@@ -70,7 +71,7 @@ int BPF_PROG(commit_creds, const struct cred *new_cred) {
     }
 
     data->tgid = BPF_CORE_READ(task, tgid);
-    data->old_uid = old_euid.val;  // store EUIDs for relevance
+    data->old_uid = old_euid.val; // store EUIDs for relevance
     data->new_uid = new_euid.val;
     data->old_caps = old_caps;
     data->new_caps = new_caps;

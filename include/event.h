@@ -20,3 +20,8 @@ struct event {
   u64c old_caps;
   u64c new_caps;
 };
+
+struct active_events {
+  u32c tgid;
+  u32c timestamp; // seconds since epoch
+};

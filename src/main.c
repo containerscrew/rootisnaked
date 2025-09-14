@@ -10,6 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <curl/curl.h>
+#include <pwd.h>
 #include "notify-telegram.h"
 #include "logger.h"
 
@@ -55,19 +56,37 @@ static int handle_event(void* ctx, void* data, size_t size) {
   const char* token = app ? app->token : NULL;
   const char* chat_id = app ? app->chat_id : NULL;
 
+  // User name
+  struct passwd* user_info;
+  user_info = getpwuid(e->old_uid);
+
   if (!token || !*token || !chat_id || !*chat_id) {
     fprintf(stderr,
             "Warning: TELEGRAM_TOKEN or CHAT_ID missing; skipping send.\n");
   } else {
-    int rc = telegram_send_message(token, chat_id,
-                                   "Alert: UID 0 privileges granted!");
+    char msg[256];
+    snprintf(msg, sizeof(msg),
+             "Alert: Process %u granted UID 0 privileges!\n"
+             "Name: %s\n"
+             "Old UID: %u, New UID: %u\n"
+             "Cmdline: %s\n"
+             "Executable: %s\n",
+             e->tgid, user_info ? user_info->pw_name : "unknown", e->old_uid,
+             e->new_uid, GetCommandLine(e->tgid), GetExecutablePath(e->tgid));
+
+    int rc = telegram_send_message(token, chat_id, msg);
     if (rc != 0) {
       fprintf(stderr, "Message failed (rc=%d)\n", rc);
     }
   }
 
-  log_info("event: tgid=%u, old_uid=%u, new_uid=%u, old_caps=%s, new_caps=%s\n",
-           e->tgid, e->old_uid, e->new_uid, old_caps_str, new_caps_str);
+  // TODO: log caps changes too when debug mode is active
+  log_info(
+      "msg=process granted, user=%s, tgid=%u, old_uid=%u, new_uid=%u, "
+      "cmdline=%s,"
+      "executable_path:%s",
+      user_info ? user_info->pw_name : "unknown", e->tgid, e->old_uid,
+      e->new_uid, GetCommandLine(e->tgid), GetExecutablePath(e->tgid));
 
   free(old_caps_str);
   free(new_caps_str);
