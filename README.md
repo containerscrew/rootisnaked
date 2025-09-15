@@ -5,11 +5,18 @@
 
 <p align="center" >
     <img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/containerscrew/rootisnaked">
+    <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/containerscrew/rootisnaked">
+    <img alt="GitHub issues" src="https://img.shields.io/github/issues/containerscrew/rootisnaked">
+    <img alt="GitHub pull requests" src="https://img.shields.io/github/issues-pr/containerscrew/rootisnaked">
+    <img alt="GitHub Repo stars" src="https://img.shields.io/github/stars/containerscrew/rootisnaked?style=social">
+    <img alt="GitHub watchers" src="https://img.shields.io/github/watchers/containerscrew/rootisnaked?style=social">
+    <img alt="License" src="https://img.shields.io/badge/License-MIT-blue.svg">
+    <img alt="License" src="https://img.shields.io/badge/License-GPLv3-blue.svg">
 </p>
 
 ---
 
-> Rootisnaked was initially created using [ebpf-go](github.com/cilium/ebpf). The project actually used [libbpf](https://github.com/libbpf/libbpf) (kernel and user space code written in C). You can find the old version [here](https://github.com/containerscrew/rootisnaked/tree/rootisnaked-go). There is no reason to use C instead of Go, it's a personal preference to practice C and libbpf. This new version using `libbpf` is missing some features by the moment (like sniffing file permissions changes).
+> Rootisnaked was initially created using [ebpf-go](github.com/cilium/ebpf). The project actually uses [libbpf](https://github.com/libbpf/libbpf) (kernel and user space code written entirely in C). You can find the old version [here](https://github.com/containerscrew/rootisnaked/tree/rootisnaked-go). There is no reason to use C instead of Go in the user space, it's a personal preference to practice C and libbpf. This new version using `libbpf` is missing some features by the moment (like sniffing file permissions changes).
 
 
 # rootisnaked
