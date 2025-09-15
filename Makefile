@@ -74,3 +74,6 @@ gen-vmlinux: ## Generate vmlinux.h
 # Clean up
 clean:
 	rm -rf $(OBJDIR) $(BINDIR)
+
+build: $(BPF_OBJ) $(EXE) ## Build all 
+

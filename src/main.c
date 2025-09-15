@@ -73,7 +73,7 @@ static int handle_event(void* ctx, void* data, size_t size) {
     snprintf(msg, sizeof(msg),
              "Event: %s\n"
              "Pid: %u\n"
-             "Name: %s\n"
+             "User: %s\n"
              "Old UID: %u, New UID: %u\n"
              "Cmdline: %s\n"
              "Executable: %s\n",
