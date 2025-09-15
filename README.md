@@ -43,12 +43,6 @@ sudo apt install -y linux-headers-$(uname -r) vim gcc make clang libbpf-dev curl
 
 > Tested on `Arch Linux` with kernel version `6.16.5-arch1-1` and `Ubuntu 24.04` with kernel version `6.2.0-26-generic`.
 
-* Dependencies:
-
-```bash
-sudo apt install -y linux-headers-$(uname -r) vim gcc make clang libbpf-dev curl clang-format libcurl4-openssl-dev build-essential libelf-dev
-```
-
 ## Compile and run
 
 ```bash
@@ -62,7 +56,7 @@ export TELEGRAM_TOKEN="xxxxx:xxxxx"; export DEBUG=false; export CHAT_ID="xxxxx";
 sudo docker build -t containerscrew/rootisnaked:latest .
 ```
 
-**eBPF code needs to be run under a privileged user.**
+> **eBPF code needs to be run under a privileged user or giving capabilities and mounting some required filesystems (proc,sys...)**
 
 ```bash
 sudo podman run -itd --restart always --name rootisnaked --privileged \
