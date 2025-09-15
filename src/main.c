@@ -23,10 +23,6 @@ void init_debug_flag(void) {
   DEBUG_ENABLED = (debug && strcmp(debug, "true") == 0) ? 1 : 0;
 }
 
-// Run this:
-// export TELEGRAM_TOKEN="xxxxx";
-// export DEBUG=true; export CHAT_ID="xxxxx" ; sudo -E ./bin/rootisnaked
-
 struct app_ctx {
   const char* token;
   const char* chat_id;
@@ -42,19 +38,19 @@ static int libbpf_print_fn(enum libbpf_print_level level, const char* format,
   return vfprintf(stderr, format, args);
 }
 
-static int handle_event(void* ctx, void* data, size_t size) {
+static int handle_commit_creds_event(void* ctx, void* data, size_t size) {
   if (!data) {
     fprintf(stderr, "Error: Data pointer is NULL\n");
     return -1;
   }
 
-  if (size < sizeof(struct event)) {
+  if (size < sizeof(struct commit_creds_event)) {
     fprintf(stderr, "Error: Invalid data size (expected %zu, got %zu)\n",
-            sizeof(struct event), size);
+            sizeof(struct commit_creds_event), size);
     return -1;
   }
 
-  struct event* e = (struct event*)data;
+  struct commit_creds_event* e = (struct commit_creds_event*)data;
 
   char* old_caps_str = caps_to_string(e->old_caps);
   char* new_caps_str = caps_to_string(e->new_caps);
@@ -71,7 +67,7 @@ static int handle_event(void* ctx, void* data, size_t size) {
   if (!DEBUG_ENABLED) {
     char msg[256];
     snprintf(msg, sizeof(msg),
-             "Event: %s\n"
+             "event: %s\n"
              "Pid: %u\n"
              "User: %s\n"
              "Old UID: %u, New UID: %u\n"
@@ -176,7 +172,8 @@ int main(void) {
 
   mapfd = bpf_object__find_map_fd_by_name(obj, "events");
   if (mapfd < 0) {
-    fprintf(stderr, "Failed to find map 'events': %s\n", strerror(-mapfd));
+    fprintf(stderr, "Failed to find map 'commit_creds_events': %s\n",
+            strerror(-mapfd));
     err = mapfd;
     goto cleanup;
   }
@@ -189,7 +186,7 @@ int main(void) {
     goto cleanup;
   }
 
-  ring_buffer = ring_buffer__new(mapfd, handle_event, &app, NULL);
+  ring_buffer = ring_buffer__new(mapfd, handle_commit_creds_event, &app, NULL);
   if (!ring_buffer) {
     fprintf(stderr, "Failed to create ring buffer\n");
     goto cleanup;
@@ -198,7 +195,8 @@ int main(void) {
   signal(SIGINT, sig_handler);
   signal(SIGTERM, sig_handler);
 
-  log_info("eBPF program loaded and attached. Waiting for events...");
+  log_info(
+      "eBPF program loaded and attached. Waiting for commit_creds_events...");
 
   while (!exiting) {
     ring_buffer__poll(ring_buffer, 1000);

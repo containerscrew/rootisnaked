@@ -101,7 +101,6 @@ char* GetExecutablePath(__pid_t pid) {
   // Read symlink
   len = readlink(path, exePath, sizeof(exePath) - 1);
   if (len == -1) {
-    // Error: return "unknown"
     strncpy(exePath, "unknown", sizeof(exePath));
     exePath[sizeof(exePath) - 1] = '\0';
     return exePath;

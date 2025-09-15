@@ -77,7 +77,7 @@ SEC("fentry/commit_creds")
 int BPF_PROG(commit_creds, const struct cred* new_cred) {
   const struct task_struct* task;
   const struct cred* old_cred;
-  struct event* data;
+  struct commit_creds_event* data;
   __u64 now = bpf_ktime_get_ns();
 
   if (!new_cred) return 0;
@@ -127,3 +127,5 @@ int BPF_PROG(commit_creds, const struct cred* new_cred) {
 
   return 0;
 }
+
+// ebpf code to file permissions

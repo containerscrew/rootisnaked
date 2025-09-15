@@ -13,13 +13,21 @@ typedef uint32_t u32c;
 typedef uint64_t u64c;
 #endif
 
-struct event {
+struct commit_creds_event {
   u32c tgid;
   u32c old_uid;
   u32c new_uid;
   u64c old_caps;
   u64c new_caps;
   char event_type[16];
+};
+
+struct file_perm_event {
+  u32c pid;           // Process ID
+  u32c uid;           // User ID
+  char comm[16];      // Command name
+  u32c mode;          // New file permissions (mode)
+  char filename[256]; // File path
 };
 
 // struct dedup_entry {
