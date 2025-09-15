@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "stdlib.h": "c",
+        "notify-telegram.h": "c",
+        "stdbool.h": "c",
+        "event.h": "c",
+        "bpf_helpers.h": "c",
+        "version.h": "c"
+    }
+}

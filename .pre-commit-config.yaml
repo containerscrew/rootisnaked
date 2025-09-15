@@ -2,24 +2,14 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
+      - id: fix-byte-order-marker
+      - id: check-case-conflict
       - id: check-merge-conflict
-      - id: end-of-file-fixer
+      - id: check-symlinks
+      # - id: end-of-file-fixer
+      - id: mixed-line-ending
       - id: trailing-whitespace
-      - id: check-yaml
-      - id: check-added-large-files
-        args: ["--maxkb", "5000"]
-  - repo: https://github.com/dnephin/pre-commit-golang
-    rev: v0.5.1
-    hooks:
-      - id: go-fmt
-      #- id: go-critic
-      - id: go-mod-tidy
-  - repo: https://github.com/containerscrew/mtoc
-    rev: v0.4.1
-    hooks:
-      - id: mtoc
-        args: [ "-e", ".pytest_cache/"]
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.23.3
+    rev: v8.18.0
     hooks:
       - id: gitleaks

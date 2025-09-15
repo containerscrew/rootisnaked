@@ -1,0 +1,44 @@
+images:
+  - location: "https://cloud-images.ubuntu.com/releases/plucky/release/ubuntu-25.04-server-cloudimg-amd64.img"
+    arch: "x86_64"
+  - location: "https://cloud-images.ubuntu.com/releases/plucky/release/ubuntu-25.04-server-cloudimg-arm64.img"
+    arch: "aarch64"
+
+user:
+  name: "ebpf"
+
+mounts:
+  - location: "~/Documents/Code/Personal/rootisnaked"
+    mountPoint: "/home/ebpf.lima/rootisnaked"
+    writable: true
+
+  - location: "~/.ssh/lima"
+    mountPoint: "/tmp/lima"
+    writable: false
+
+memory: "2GiB"
+cpus: 2
+disk: "15GiB"
+
+rosetta:
+  enabled: true
+  binfmt: true
+
+ssh:
+  localPort: 2222
+  loadDotSSHPubKeys: true
+
+provision:
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      apt update -y
+      apt install -y vim gcc make clang libbpf-dev curl clang-format libcurl4-openssl-dev build-essential libelf-dev
+
+  - mode: user
+    script: |
+      #!/bin/bash
+      set -eux -o pipefail
+      sudo cat /tmp/lima/lima.pub >> $HOME/.ssh/authorized_keys
+      sudo chmod 0644 $HOME/.ssh/authorized_keys

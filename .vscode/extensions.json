@@ -1,0 +1,10 @@
+{
+    "recommendations": [
+        "ms-vscode.cpptools-themes",
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "christian-kohler.path-intellisense",
+        "ms-vscode.cpptools-extension-pack",
+        "coolbear.systemd-unit-file",
+    ]
+}
