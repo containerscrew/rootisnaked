@@ -1,0 +1,34 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "make",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        },
+        {
+            "label": "Run Rootisnaked",
+            "type": "shell",
+            "command": "sudo",
+            "args": [
+                "-E",
+                "./bin/rootisnaked"
+            ],
+            "options": {
+                "env": {
+                    "TELEGRAM_TOKEN": "xxxxx",
+                    "DEBUG": "true",
+                    "CHAT_ID": "xxxxx"
+                }
+            },
+            "problemMatcher": []
+        }
+    ]
+}

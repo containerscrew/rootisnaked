@@ -52,7 +52,6 @@ static void log_message(char* level, const char* message) {
 }
 
 // Helper function to handle formatted logging
-// Helper function to handle formatted logging (sin truncados)
 static void log_formatted_message(char* level, const char* message,
                                   va_list args) {
   va_list ap1, ap2;
@@ -62,7 +61,6 @@ static void log_formatted_message(char* level, const char* message,
   int needed = vsnprintf(NULL, 0, message, ap1);
   va_end(ap1);
   if (needed < 0) {
-    // si falla el cálculo, imprime algo básico
     log_message(level, "log formatting error");
     return;
   }

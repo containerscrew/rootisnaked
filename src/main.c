@@ -13,8 +13,15 @@
 #include <pwd.h>
 #include "notify-telegram.h"
 #include "logger.h"
+#include <stdbool.h>
 
 static volatile bool exiting = false;
+int DEBUG_ENABLED = 0;
+
+void init_debug_flag(void) {
+  const char* debug = getenv("DEBUG");
+  DEBUG_ENABLED = (debug && strcmp(debug, "true") == 0) ? 1 : 0;
+}
 
 // Run this:
 // export TELEGRAM_TOKEN="xxxxx";
@@ -60,19 +67,19 @@ static int handle_event(void* ctx, void* data, size_t size) {
   struct passwd* user_info;
   user_info = getpwuid(e->old_uid);
 
-  if (!token || !*token || !chat_id || !*chat_id) {
-    fprintf(stderr,
-            "Warning: TELEGRAM_TOKEN or CHAT_ID missing; skipping send.\n");
-  } else {
+  // If debug mode is off, send Telegram message (production ready)
+  if (!DEBUG_ENABLED) {
     char msg[256];
     snprintf(msg, sizeof(msg),
-             "Alert: Process %u granted UID 0 privileges!\n"
+             "Event: %s\n"
+             "Pid: %u\n"
              "Name: %s\n"
              "Old UID: %u, New UID: %u\n"
              "Cmdline: %s\n"
              "Executable: %s\n",
-             e->tgid, user_info ? user_info->pw_name : "unknown", e->old_uid,
-             e->new_uid, GetCommandLine(e->tgid), GetExecutablePath(e->tgid));
+             e->event_type, e->tgid, user_info ? user_info->pw_name : "unknown",
+             e->old_uid, e->new_uid, GetCommandLine(e->tgid),
+             GetExecutablePath(e->tgid));
 
     int rc = telegram_send_message(token, chat_id, msg);
     if (rc != 0) {
@@ -82,11 +89,12 @@ static int handle_event(void* ctx, void* data, size_t size) {
 
   // TODO: log caps changes too when debug mode is active
   log_info(
-      "msg=process granted, user=%s, tgid=%u, old_uid=%u, new_uid=%u, "
-      "cmdline=%s,"
+      "event=%s, user=%s, tgid=%u, old_uid=%u, new_uid=%u, "
+      "cmdline=%s, "
       "executable_path:%s",
-      user_info ? user_info->pw_name : "unknown", e->tgid, e->old_uid,
-      e->new_uid, GetCommandLine(e->tgid), GetExecutablePath(e->tgid));
+      e->event_type, user_info ? user_info->pw_name : "unknown", e->tgid,
+      e->old_uid, e->new_uid, GetCommandLine(e->tgid),
+      GetExecutablePath(e->tgid));
 
   free(old_caps_str);
   free(new_caps_str);
@@ -119,9 +127,8 @@ int main(void) {
   }
   const char* telegram_token = getenv("TELEGRAM_TOKEN");
   const char* chat_id = getenv("CHAT_ID");
-  const char* debug = getenv("DEBUG") ? getenv("DEBUG") : "false";
+  init_debug_flag();
 
-  // Init libcurl lo antes posible
   if (curl_global_init(CURL_GLOBAL_DEFAULT) != 0) {
     fprintf(stderr, "curl_global_init failed\n");
     return 1;
@@ -142,7 +149,7 @@ int main(void) {
   }
 
   log_info("Starting rootisnaked");
-  if (debug && strcmp(debug, "true") == 0) {
+  if (DEBUG_ENABLED) {
     libbpf_set_print(libbpf_print_fn);
   }
 

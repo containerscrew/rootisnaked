@@ -67,5 +67,5 @@ Mkfile.old
 dkms.conf
 
 # IDE
-.vscode/
+# .vscode/
 .idea/

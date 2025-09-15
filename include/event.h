@@ -19,9 +19,9 @@ struct event {
   u32c new_uid;
   u64c old_caps;
   u64c new_caps;
+  char event_type[16];
 };
 
-struct active_events {
-  u32c tgid;
-  u32c timestamp; // seconds since epoch
-};
+// struct dedup_entry {
+//   __u64 last_seen_ns; // monotonic clock from bpf_ktime_get_ns()
+// };
