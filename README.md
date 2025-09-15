@@ -55,7 +55,7 @@ sudo apt install -y linux-headers-$(uname -r) vim gcc make clang libbpf-dev curl
 ## Compile and run
 
 ```bash
-make
+make -j$(nproc)
 export TELEGRAM_TOKEN="xxxxx:xxxxx"; export DEBUG=false; export CHAT_ID="xxxxx";  sudo -E ./bin/rootisnaked
 ```
 
