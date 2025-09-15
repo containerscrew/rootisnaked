@@ -9,7 +9,7 @@
 
 ---
 
-> Rootisnaked was initially created using [ebpf-go](github.com/cilium/ebpf). The project actually used [libbpf](https://github.com/libbpf/libbpf) (kernel and user space code written in C). You can find the old version [here](https://github.com/containerscrew/rootisnaked/tree/rootisnaked-go). There is no reason to use C instead of Go, it's a personal preference to practice C and libbpf.
+> Rootisnaked was initially created using [ebpf-go](github.com/cilium/ebpf). The project actually used [libbpf](https://github.com/libbpf/libbpf) (kernel and user space code written in C). You can find the old version [here](https://github.com/containerscrew/rootisnaked/tree/rootisnaked-go). There is no reason to use C instead of Go, it's a personal preference to practice C and libbpf. This new version using `libbpf` is missing some features by the moment (like sniffing file permissions changes).
 
 
 # rootisnaked
@@ -30,8 +30,10 @@ It can be used, for example, to detect possible Linux privilege escalation.
 2025-09-15 22:24:01 [INFO]: event=commit creds, user=dcr, tgid=140285, old_uid=1000, new_uid=0, cmdline=sudo su - , executable_path:/usr/bin/sudo
 ```
 
-> [!NOTE]
-> This new version of `rootisnaked` is missing some features (like implemented in the `rootisnaked-go` branch). Some tracepoints still need to be added to detect permission changes on files.
+<h2 align="center">Telegram Alert Example</h2>
+<p align="center">
+  <img src="telegram_alert.png" alt="logo" width="400"/>
+</p>
 
 # Running `rootisnaked`
 
