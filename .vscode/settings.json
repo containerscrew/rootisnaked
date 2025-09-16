@@ -5,6 +5,11 @@
         "stdbool.h": "c",
         "event.h": "c",
         "bpf_helpers.h": "c",
-        "version.h": "c"
+        "version.h": "c",
+        "pwd.h": "c",
+        "handle_events.h": "c",
+        "errno.h": "c",
+        "curl.h": "c",
+        "libbpf.h": "c"
     }
 }

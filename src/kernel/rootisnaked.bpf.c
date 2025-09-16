@@ -1,5 +1,5 @@
 #include "vmlinux.h"
-#include "event.h"
+#include "common.h"
 #include <bpf/bpf_core_read.h>
 #include <bpf/bpf_helpers.h>
 #include <bpf/bpf_tracing.h>
@@ -7,11 +7,6 @@
 
 char LICENSE[] SEC("license") = "Dual BSD/GPL";
 __u32 __version SEC("version") = LINUX_VERSION_CODE;
-
-struct {
-  __uint(type, BPF_MAP_TYPE_RINGBUF);
-  __uint(max_entries, 1 << 24); // 16MB buffer
-} events SEC(".maps");
 
 #define WINDOW_NS (5ULL * 60ULL * 1000000000ULL) // 5 minutes
 
@@ -21,8 +16,13 @@ struct dedup_entry {
 
 struct dedup_key {
   __u32 tgid;
-  __u64 start_time; // task->start_time (monotonic)
+  __u64 start_time;
 };
+
+struct {
+  __uint(type, BPF_MAP_TYPE_RINGBUF);
+  __uint(max_entries, 1 << 24); // 16MB buffer
+} events SEC(".maps");
 
 struct {
   __uint(type, BPF_MAP_TYPE_LRU_HASH);

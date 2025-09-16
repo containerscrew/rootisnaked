@@ -148,3 +148,10 @@ char* GetCommandLine(__pid_t pid) {
 
   return cmdline;
 }
+
+void GetHostname(char* buf, size_t sz) {
+  if (gethostname(buf, sz) != 0) {
+    strncpy(buf, "unknown", sz);
+    buf[sz - 1] = '\0';
+  }
+}

@@ -30,6 +30,14 @@ struct file_perm_event {
   char filename[256]; // File path
 };
 
-// struct dedup_entry {
-//   __u64 last_seen_ns; // monotonic clock from bpf_ktime_get_ns()
-// };
+/* include/app_ctx.h */
+#ifndef APP_CTX_H
+#define APP_CTX_H
+
+struct app_ctx {
+  const char* token;
+  const char* chat_id;
+  /* …otros campos que usas en otras partes del programa… */
+};
+
+#endif /* APP_CTX_H */
