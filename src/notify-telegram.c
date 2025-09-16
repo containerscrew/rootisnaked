@@ -69,8 +69,10 @@ int telegram_send_message(const char* token, const char* chat_id,
             curl_easy_strerror(res));
     return 2;
   }
+
   if (http_code != 200) {
-    fprintf(stderr, "telegram_send_message: http_code=%ld\n", http_code);
+    fprintf(stderr, "telegram_send_message: http_code=%ld, %s\n", http_code,
+            curl_easy_strerror(res));
     return 3;
   }
   return 0;

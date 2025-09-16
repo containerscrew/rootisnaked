@@ -7,6 +7,15 @@ CFLAGS    += -Wall -MMD -Wunused-but-set-variable
 LDLIBS    += $(shell pkg-config --libs libbpf libcurl) -ldl
 
 # ----------------------------------------------------------------------
+#  Parallel build (default)
+# ----------------------------------------------------------------------
+# Use all available CPU cores on the machine when invoking make.
+# If the NPROC variable is defined (for example in CI), it is respected;
+# otherwise, it is determined at runtime using `nproc`.
+MAKEFLAGS += -j$(if $(NPROC),$(NPROC),$(shell nproc))
+
+
+# ----------------------------------------------------------------------
 #  Directory layout
 # ----------------------------------------------------------------------
 SRCDIR    := src
