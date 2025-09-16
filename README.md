@@ -56,7 +56,10 @@ sudo apt install -y linux-headers-$(uname -r) vim gcc make clang libbpf-dev curl
 
 ```bash
 make -j$(nproc)
-export TELEGRAM_TOKEN="xxxxx:xxxxx"; export DEBUG=false; export CHAT_ID="xxxxx";  sudo -E ./bin/rootisnaked
+export TELEGRAM_TOKEN="xxxxx:xxxxx"; export DEBUG=false; export CHAT_ID="xxxxx"; sudo -E ./bin/rootisnaked
+# In background
+export TELEGRAM_TOKEN="xxxxx:xxxxx"; export DEBUG=false; export CHAT_ID="xxxxx"
+nohup sudo -E ./bin/rootisnaked > rootisnaked.log 2>&1 &
 ```
 
 ## Using docker
