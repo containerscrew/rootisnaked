@@ -1,6 +1,11 @@
 global:
   resolve_timeout: 5m
 
+# basic_auth:
+#   username: elliot
+#   password: adminadmin@
+#   #  password_file: <string>
+
 route:
   group_wait: 5s
   receiver: noop

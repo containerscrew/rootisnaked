@@ -9,7 +9,7 @@ user:
 
 mounts:
   - location: "~/Documents/Code/Personal/rootisnaked"
-    mountPoint: "/home/ebpf.lima/rootisnaked"
+    mountPoint: "/home/ebpf.linux/rootisnaked"
     writable: true
 
   - location: "~/.ssh/lima"

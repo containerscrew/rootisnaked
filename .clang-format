@@ -1,6 +1,7 @@
 BasedOnStyle: LLVM
 Language: Cpp
 
+
 # Indentation and width
 IndentWidth: 2
 ContinuationIndentWidth: 4

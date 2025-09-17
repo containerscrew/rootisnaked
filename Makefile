@@ -1,33 +1,32 @@
 # ----------------------------------------------------------------------
 #  Compiler configuration
 # ----------------------------------------------------------------------
-CC        := gcc                         # user‑space compiler (can be clang)
+CC        := gcc
 CPPFLAGS  += -Iinclude $(shell pkg-config --cflags libbpf libcurl)
 CFLAGS    += -Wall -MMD -Wunused-but-set-variable
 LDLIBS    += $(shell pkg-config --libs libbpf libcurl) -ldl
 
 # ----------------------------------------------------------------------
-#  Parallel build (default)
+#  Parallel build
 # ----------------------------------------------------------------------
 # Use all available CPU cores on the machine when invoking make.
 # If the NPROC variable is defined (for example in CI), it is respected;
 # otherwise, it is determined at runtime using `nproc`.
 MAKEFLAGS += -j$(if $(NPROC),$(NPROC),$(shell nproc))
 
-
 # ----------------------------------------------------------------------
 #  Directory layout
 # ----------------------------------------------------------------------
-SRCDIR    := src
-KERNDIR   := $(SRCDIR)/kernel            # eBPF source directory
-OBJDIR    := build
-BINDIR    := bin
+SRCDIR      := src
+KERNDIR     := $(SRCDIR)/kernel
+OBJDIR      := build
+BINDIR      := bin
 INCLUDE_DIR := include
 
 # ----------------------------------------------------------------------
-#  Architecture detection (for BPF target)
+#  Architecture detection for BPF
 # ----------------------------------------------------------------------
-ARCH      := $(shell uname -m)
+ARCH := $(shell uname -m)
 ifeq ($(ARCH),x86_64)
     ARCH_BPF = x86
 else ifeq ($(ARCH),aarch64)
@@ -41,17 +40,16 @@ endif
 # ----------------------------------------------------------------------
 #  Source / object lists
 # ----------------------------------------------------------------------
-# User‑space (normal) sources
 SOURCES   := $(wildcard $(SRCDIR)/*.c)
 OBJ       := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.o,$(SOURCES))
 DEPFILES  := $(patsubst $(SRCDIR)/%.c,$(OBJDIR)/%.d,$(SOURCES))
 
-# eBPF sources (any *.bpf.c under $(KERNDIR))
-BPF_SRCS  := $(wildcard $(KERNDIR)/*.bpf.c)
-BPF_OBJS  := $(patsubst $(KERNDIR)/%.bpf.c,$(OBJDIR)/%.bpf.o,$(BPF_SRCS))
+# All eBPF sources in src/kernel
+BPF_SRCS := $(wildcard $(KERNDIR)/*.bpf.c)
+BPF_OBJS := $(patsubst $(KERNDIR)/%.bpf.c,$(OBJDIR)/%.bpf.o,$(BPF_SRCS))
 
 # Final executable
-EXE       := $(BINDIR)/rootisnaked
+EXE := $(BINDIR)/rootisnaked
 
 # ----------------------------------------------------------------------
 #  Tools for lint/format
@@ -64,29 +62,25 @@ FORMATTER := clang-format
 # ----------------------------------------------------------------------
 .PHONY: all format lint gen-vmlinux clean build
 
-all: $(EXE)               # default target builds everything
+all: $(BPF_OBJS) $(EXE)
 
-# Build the user‑space binary; order‑only prerequisite ensures eBPF objects are fresh
+# Compile user-space executable
 $(EXE): $(OBJ) | $(BPF_OBJS)
 	@mkdir -p $(BINDIR)
 	$(CC) $(OBJ) $(LDLIBS) -o $@
 
-# ----------------------------------------------------------------------
-#  Pattern rule for normal C objects (user‑space)
-# ----------------------------------------------------------------------
+# Compile normal C objects (user-space)
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	@mkdir -p $(OBJDIR)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
-# ----------------------------------------------------------------------
-#  Pattern rule for eBPF objects (one per *.bpf.c)
-# ----------------------------------------------------------------------
-$(OBJDIR)/%.bpf.o: $(KERNDIR)/%.bpf.c $(INCLUDE_DIR)/vmlinux.h
+# Compile each eBPF object
+$(OBJDIR)/%.bpf.o: $(KERNDIR)/%.bpf.c | $(INCLUDE_DIR)/vmlinux.h
 	@mkdir -p $(OBJDIR)
-	$(CC) -O2 -g -target bpf \
-	       -D__TARGET_ARCH_$(ARCH_BPF) \
-	       -I$(INCLUDE_DIR) \
-	       -c $< -o $@
+	clang -O2 -g -target bpf \
+	      -D__TARGET_ARCH_$(ARCH_BPF) \
+	      -I$(INCLUDE_DIR) \
+	      -c $< -o $@
 
 # ----------------------------------------------------------------------
 #  Helper / maintenance targets
@@ -97,7 +91,7 @@ format:
 lint:
 	@$(LINTER) --config-file=.clang-tidy $(SRCDIR)/*.c $(INCLUDE_DIR)/*.h -- $(CPPFLAGS) $(CFLAGS)
 
-# Generate vmlinux.h (BTF) – optional, but many eBPF programs need it
+# Generate vmlinux.h (BTF)
 gen-vmlinux:
 	@mkdir -p $(INCLUDE_DIR)
 	bpftool btf dump file /sys/kernel/btf/vmlinux format c > $(INCLUDE_DIR)/vmlinux.h
@@ -105,10 +99,9 @@ gen-vmlinux:
 clean:
 	rm -rf $(OBJDIR) $(BINDIR)
 
-# Alias that forces a full rebuild (useful for CI)
 build: clean all
 
 # ----------------------------------------------------------------------
-#  Include generated dependency files for normal C objects
+#  Include generated dependency files
 # ----------------------------------------------------------------------
 -include $(DEPFILES)

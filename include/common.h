@@ -37,7 +37,6 @@ struct file_perm_event {
 struct app_ctx {
   const char* token;
   const char* chat_id;
-  /* …otros campos que usas en otras partes del programa… */
 };
 
 #endif /* APP_CTX_H */

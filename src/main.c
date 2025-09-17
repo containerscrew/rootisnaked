@@ -24,18 +24,13 @@ void init_debug_flag(void) {
   DEBUG_ENABLED = (debug && strcmp(debug, "true") == 0) ? 1 : 0;
 }
 
-struct app_ctx {
-  const char* token;
-  const char* chat_id;
-};
-
 static void sig_handler(int sig) {
   log_warning("Dettaching rootisnaked eBPF program, bye! Signal=%d\n", sig);
   exiting = true;
 }
 
 static int libbpf_print_fn(enum libbpf_print_level level, const char* format,
-                           va_list args) {
+  va_list args) {
   return vfprintf(stderr, format, args);
 }
 
@@ -99,7 +94,7 @@ static int libbpf_print_fn(enum libbpf_print_level level, const char* format,
 // }
 
 static struct bpf_program* find_program(struct bpf_object* obj,
-                                        const char* name) {
+  const char* name) {
   struct bpf_program* prog = bpf_object__find_program_by_name(obj, name);
   if (!prog) {
     fprintf(stderr, "Failed to find eBPF program '%s'\n", name);
@@ -139,8 +134,8 @@ int main(void) {
   // Ensure the program is run as root
   if (geteuid() != 0) {
     log_error(
-        "You must run this program as root. Consider using sudo: $ sudo "
-        "rootisnaked");
+      "You must run this program as root. Consider using sudo: $ sudo "
+      "rootisnaked");
     curl_global_cleanup();
     return 1;
   }
@@ -174,7 +169,7 @@ int main(void) {
   mapfd = bpf_object__find_map_fd_by_name(obj, "events");
   if (mapfd < 0) {
     fprintf(stderr, "Failed to find map 'commit_creds_events': %s\n",
-            strerror(-mapfd));
+      strerror(-mapfd));
     err = mapfd;
     goto cleanup;
   }
@@ -197,7 +192,7 @@ int main(void) {
   signal(SIGTERM, sig_handler);
 
   log_info(
-      "eBPF program loaded and attached. Waiting for commit_creds_events...");
+    "eBPF program loaded and attached. Waiting for commit_creds_events...");
 
   while (!exiting) {
     ring_buffer__poll(ring_buffer, 1000);
