@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  alertmanager:
+    image: quay.io/prometheus/alertmanager:latest
+    container_name: alertmanager
+    restart: unless-stopped
+    volumes:
+      - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+    ports:
+      - "9093:9093"

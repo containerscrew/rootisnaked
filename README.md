@@ -18,7 +18,6 @@
 
 > Rootisnaked was initially created using [ebpf-go](github.com/cilium/ebpf). The project actually uses [libbpf](https://github.com/libbpf/libbpf) (kernel and user space code written entirely in C). You can find the initial version [here](https://github.com/containerscrew/rootisnaked/tree/rootisnaked-go). There is no reason to use C instead of Go in the user space, it's a personal preference to practice C and libbpf. This new version using `libbpf` is missing some features by the moment (like sniffing file permissions changes).
 
-
 # rootisnaked
 
 `Rootisnaked` is a simple [eBPF](https://ebpf.io/) program designed to monitor changes in user credentials (specifically, the UID) on a Linux system. It hooks into the `commit_creds` kernel function, which is called when a process's credentials are updated. The program detects when a process's UID changes to 0 (root) and logs this event to a ring buffer for further analysis in user space.
@@ -68,7 +67,7 @@ nohup sudo -E ./bin/rootisnaked > rootisnaked.log 2>&1 &
 ## Using docker
 
 ```bash
-sudo docker build -t containerscrew/rootisnaked:latest .
+sudo docker build -f docker/Dockerfile -t containerscrew/rootisnaked:latest .
 ```
 
 > **eBPF code needs to be run under a privileged user or giving capabilities and mounting some required filesystems (proc,sys...)**
@@ -81,6 +80,16 @@ sudo podman run -itd --restart always --name rootisnaked --privileged \
 ```
 
 > Using `sudo` because I use podman rootless
+
+# Setup alertmanager for centralized alerting
+
+```bash
+cp docker/.env.example docker/.env
+# Edit docker/.env and set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID
+set -a; source docker/.env; set +a
+envsubst < docker/alertmanager/alertmanager.yml.tpl > docker/alertmanager/alertmanager.yml
+docker-compose -f docker/compose.yml up -d
+```
 
 # License
 

@@ -69,3 +69,12 @@ dkms.conf
 # IDE
 # .vscode/
 .idea/
+
+
+# Env file
+.env
+
+
+# Alertmanager
+docker/alertmanager/alertmanager.yml
+
