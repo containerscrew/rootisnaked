@@ -15,6 +15,21 @@
 #include <stdbool.h>
 #include <time.h>
 
+// Whitelist executable path
+const char* whitelist[] = {
+    "/usr/bin/unix_chkpwd",
+    "/usr/bin/sudo",
+    "/usr/bin/pkexec",
+    "/usr/sbin/crond",
+};
+
+static int is_whitelisted(const char* exe) {
+  for (size_t i = 0; i < sizeof(whitelist) / sizeof(whitelist[0]); ++i) {
+    if (strcmp(exe, whitelist[i]) == 0) return 1;
+  }
+  return 0;
+}
+
 static void get_current_time_rfc3339(char* buf, size_t bufsize) {
   time_t now = time(NULL);
   struct tm tm;
@@ -38,6 +53,10 @@ int handle_commit_creds_event(void* ctx, void* data, size_t size) {
 
   char* old_caps_str = caps_to_string(e->old_caps);
   char* new_caps_str = caps_to_string(e->new_caps);
+  char* executable_path = GetExecutablePath(e->tgid);
+  if (!executable_path) executable_path = strdup("unknown");
+  char* cmdline = GetCommandLine(e->tgid);
+  if (!cmdline) cmdline = strdup("unknown");
 
   struct app_ctx* app = (struct app_ctx*)ctx;
 
@@ -45,7 +64,7 @@ int handle_commit_creds_event(void* ctx, void* data, size_t size) {
   struct passwd* user_info;
   user_info = getpwuid(e->old_uid);
 
-  // If debug mode is off, send Telegram message (production ready)
+  // If debug is not enabled, send alert to alertmanager (production ready)
   if (!DEBUG_ENABLED) {
     // Time in RFC3339 format (UTC)
     char start_time_rfc3339[32];
@@ -73,12 +92,15 @@ int handle_commit_creds_event(void* ctx, void* data, size_t size) {
              "\"startsAt\":\"%s\""
              "}]",
              e->event_type, e->tgid, user_info ? user_info->pw_name : "unknown",
-             e->old_uid, e->new_uid, GetCommandLine(e->tgid),
-             GetExecutablePath(e->tgid), "localhost", start_time_rfc3339);
+             e->old_uid, e->new_uid, cmdline, executable_path, "localhost",
+             start_time_rfc3339);
 
-    int rc = send_alert(app->url, json);
-    if (rc != 0) {
-      fprintf(stderr, "Message failed (rc=%d)\n", rc);
+    // If executable is in whitelist, ignore the alert
+    if (!is_whitelisted(executable_path)) {
+      int rc = send_alert(app->url, json);
+      if (rc != 0) {
+        fprintf(stderr, "Message failed (rc=%d)\n", rc);
+      }
     }
   }
 
@@ -88,8 +110,7 @@ int handle_commit_creds_event(void* ctx, void* data, size_t size) {
       "cmdline=%s, "
       "executable_path:%s",
       e->event_type, user_info ? user_info->pw_name : "unknown", e->tgid,
-      e->old_uid, e->new_uid, GetCommandLine(e->tgid),
-      GetExecutablePath(e->tgid));
+      e->old_uid, e->new_uid, cmdline, executable_path);
 
   free(old_caps_str);
   free(new_caps_str);
