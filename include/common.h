@@ -35,8 +35,7 @@ struct file_perm_event {
 #define APP_CTX_H
 
 struct app_ctx {
-  const char* token;
-  const char* chat_id;
+  const char* url;
 };
 
 #endif /* APP_CTX_H */

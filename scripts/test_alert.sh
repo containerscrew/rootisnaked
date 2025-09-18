@@ -2,8 +2,6 @@
 
 START=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-echo $START
-
 cat <<EOF | curl -v -X POST "http://localhost:9093/api/v2/alerts" \
   -H "Content-Type: application/json" -d @-
 [

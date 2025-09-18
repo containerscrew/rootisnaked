@@ -1,7 +1,7 @@
 #include "common.h"
 #include "utils.h"
 #include "logger.h"
-#include "notify_telegram.h"
+#include "alerting.h"
 #include "handle_events.h"
 #include <bpf/bpf.h>
 #include <bpf/libbpf.h>
@@ -13,6 +13,14 @@
 #include <string.h>
 #include <pwd.h>
 #include <stdbool.h>
+#include <time.h>
+
+static void get_current_time_rfc3339(char* buf, size_t bufsize) {
+  time_t now = time(NULL);
+  struct tm tm;
+  gmtime_r(&now, &tm);
+  strftime(buf, bufsize, "%Y-%m-%dT%H:%M:%SZ", &tm);
+}
 
 int handle_commit_creds_event(void* ctx, void* data, size_t size) {
   if (!data) {
@@ -32,8 +40,6 @@ int handle_commit_creds_event(void* ctx, void* data, size_t size) {
   char* new_caps_str = caps_to_string(e->new_caps);
 
   struct app_ctx* app = (struct app_ctx*)ctx;
-  const char* token = app ? app->token : NULL;
-  const char* chat_id = app ? app->chat_id : NULL;
 
   // User name
   struct passwd* user_info;
@@ -41,22 +47,36 @@ int handle_commit_creds_event(void* ctx, void* data, size_t size) {
 
   // If debug mode is off, send Telegram message (production ready)
   if (!DEBUG_ENABLED) {
-    char msg[256];
-    // char host[256];
-    // GetHostname(host, sizeof(host));
-    snprintf(msg, sizeof(msg),
-             "event: %s\n"
-             "Pid: %u\n"
-             "User: %s\n"
-             "Old UID: %u, New UID: %u\n"
-             "Cmdline: %s\n"
-             "Executable: %s\n"
-             "Host: %s\n",
+    // Time in RFC3339 format (UTC)
+    char start_time_rfc3339[32];
+    get_current_time_rfc3339(start_time_rfc3339, sizeof(start_time_rfc3339));
+
+    char json[2048];
+    snprintf(json, sizeof(json),
+             "[{\"labels\":{"
+             "\"alertname\":\"PrivilegeEscalation\","
+             "\"severity\":\"critical\","
+             "\"instance\":\"localhost\","
+             "\"event\":\"%s\","
+             "\"pid\":\"%u\","
+             "\"user\":\"%s\","
+             "\"old_uid\":\"%u\","
+             "\"new_uid\":\"%u\","
+             "\"cmdline\":\"%s\","
+             "\"executable\":\"%s\""
+             "},"
+             "\"annotations\":{"
+             "\"title\":\"Privilege Escalation Attempt Detected\","
+             "\"description\":\"A possible privilege escalation attempt was "
+             "detected on host %s\""
+             "},"
+             "\"startsAt\":\"%s\""
+             "}]",
              e->event_type, e->tgid, user_info ? user_info->pw_name : "unknown",
              e->old_uid, e->new_uid, GetCommandLine(e->tgid),
-             GetExecutablePath(e->tgid), "localhost");
+             GetExecutablePath(e->tgid), "localhost", start_time_rfc3339);
 
-    int rc = telegram_send_message(token, chat_id, msg);
+    int rc = send_alert(app->url, json);
     if (rc != 0) {
       fprintf(stderr, "Message failed (rc=%d)\n", rc);
     }

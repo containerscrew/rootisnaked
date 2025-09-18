@@ -12,4 +12,4 @@ separator "Running clang format"
 make format
 
 separator "Scanning for secrets"
-gitleaks dir -v
+gitleaks git -v

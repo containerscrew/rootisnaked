@@ -72,7 +72,7 @@ dkms.conf
 
 
 # Env file
-.env
+docker/.env
 
 
 # Alertmanager

@@ -23,16 +23,16 @@ receivers:
     telegram_configs:
       - bot_token: ${TELEGRAM_BOT_TOKEN}
         chat_id: ${TELEGRAM_CHAT_ID}
-        send_resolved: true
+        send_resolved: false
         parse_mode: "MarkdownV2"
         message: |
           {{ range .Alerts -}}
           *{{ .Status | toUpper }}* – {{ .Labels.alertname }}
-          {{ if .Labels.severity }}*Severidad:* `{{ .Labels.severity }}`{{ end }}
-          {{ if .Annotations.title }}*Título:* {{ .Annotations.title }}{{ end }}
-          {{ if .Annotations.description }}*Descripción:* {{ .Annotations.description }}{{ end }}
+          {{ if .Labels.severity }}*Severity:* `{{ .Labels.severity }}`{{ end }}
+          {{ if .Annotations.title }}*Title:* {{ .Annotations.title }}{{ end }}
+          {{ if .Annotations.description }}*Description:* {{ .Annotations.description }}{{ end }}
 
-          *Detalles:*
+          *Details:*
           {{ range .Labels.SortedPairs }} • *{{ .Name }}*: `{{ .Value }}`
           {{ end }}
 
