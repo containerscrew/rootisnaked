@@ -41,6 +41,9 @@ It can be used, for example, to detect possible Linux privilege escalation.
   <img src="telegram_alert.png" alt="logo" width="400"/>
 </p>
 
+> [!WARNING]
+> Documentation outdated.
+
 # Running `rootisnaked`
 
 ## Install system dependencies
