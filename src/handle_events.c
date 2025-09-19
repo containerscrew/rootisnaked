@@ -81,7 +81,7 @@ int handle_commit_creds_event(void* ctx, void* data, size_t size) {
              "[{\"labels\":{"
              "\"alertname\":\"PrivilegeEscalation\","
              "\"severity\":\"critical\","
-             "\"instance\":\"localhost\","
+             "\"instance\":\"%s\","
              "\"event\":\"%s\","
              "\"pid\":\"%u\","
              "\"user\":\"%s\","
@@ -97,9 +97,9 @@ int handle_commit_creds_event(void* ctx, void* data, size_t size) {
              "},"
              "\"startsAt\":\"%s\""
              "}]",
-             e->event_type, e->tgid, user_info ? user_info->pw_name : "unknown",
-             e->old_uid, e->new_uid, cmdline, executable_path, hostname,
-             start_time_rfc3339);
+             hostname, e->event_type, e->tgid,
+             user_info ? user_info->pw_name : "unknown", e->old_uid, e->new_uid,
+             cmdline, executable_path, hostname, start_time_rfc3339);
 
     // If executable is in whitelist, ignore the alert
     if (!is_whitelisted(executable_path)) {
