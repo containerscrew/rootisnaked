@@ -48,8 +48,8 @@ static struct bpf_program* find_program(struct bpf_object* obj,
 int main(void) {
   struct bpf_object* obj;
   int err = 0;
-  struct bpf_program* prog;
-  struct bpf_link* link = NULL;
+  struct bpf_program *commit_creds_program, *file_permission_program;
+  struct bpf_link *commit_creds_link, *file_permission_link = NULL;
   int mapfd;
   struct ring_buffer* ring_buffer = NULL;
   const char* bpf_file = "build/rootisnaked.bpf.o";
@@ -100,8 +100,8 @@ int main(void) {
     return 1;
   }
 
-  prog = find_program(obj, "commit_creds");
-  if (!prog) {
+  commit_creds_program = find_program(obj, "commit_creds");
+  if (!commit_creds_program) {
     bpf_object__close(obj);
     curl_global_cleanup();
     return 1;
@@ -115,10 +115,10 @@ int main(void) {
     goto cleanup;
   }
 
-  link = bpf_program__attach(prog);
-  if (libbpf_get_error(link)) {
-    err = libbpf_get_error(link);
-    link = NULL;
+  commit_creds_link = bpf_program__attach(commit_creds_program);
+  if (libbpf_get_error(commit_creds_link)) {
+    err = libbpf_get_error(commit_creds_link);
+    commit_creds_link = NULL;
     fprintf(stderr, "Failed to attach program (fentry): %s\n", strerror(-err));
     goto cleanup;
   }
@@ -143,9 +143,14 @@ cleanup:
   if (ring_buffer) {
     ring_buffer__free(ring_buffer);
   }
-  if (link) {
-    bpf_link__destroy(link);
+  if (commit_creds_link) {
+    bpf_link__destroy(commit_creds_link);
   }
+
+  if (file_permission_link) {
+    bpf_link__destroy(file_permission_link);
+  }
+
   bpf_object__close(obj);
   curl_global_cleanup();
   return err;

@@ -1,4 +1,4 @@
-// include/event.h
+// include/common.h
 #pragma once
 
 #ifdef __BPF__ // compiling with -target bpf
@@ -13,16 +13,22 @@ typedef uint32_t u32c;
 typedef uint64_t u64c;
 #endif
 
+enum event_type {
+  EVENT_COMMIT_CREDS = 1,
+  EVENT_FILE_PERM = 2,
+};
+
 struct commit_creds_event {
+  u32c event_type;
   u32c tgid;
   u32c old_uid;
   u32c new_uid;
   u64c old_caps;
   u64c new_caps;
-  char event_type[16];
 };
 
 struct file_perm_event {
+  u32c event_type;
   u32c pid;           // Process ID
   u32c uid;           // User ID
   char comm[16];      // Command name

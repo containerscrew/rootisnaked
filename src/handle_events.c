@@ -39,6 +39,17 @@ static void get_current_time_rfc3339(char* buf, size_t bufsize) {
   strftime(buf, bufsize, "%Y-%m-%dT%H:%M:%SZ", &tm);
 }
 
+static inline const char* event_type_to_string(enum event_type type) {
+  switch (type) {
+  case EVENT_COMMIT_CREDS:
+    return "commit_creds";
+  case EVENT_FILE_PERM:
+    return "file_perm";
+  default:
+    return "unknown";
+  }
+}
+
 int handle_commit_creds_event(void* ctx, void* data, size_t size) {
   if (!data) {
     fprintf(stderr, "Error: Data pointer is NULL\n");
@@ -97,7 +108,7 @@ int handle_commit_creds_event(void* ctx, void* data, size_t size) {
              "},"
              "\"startsAt\":\"%s\""
              "}]",
-             hostname, e->event_type, e->tgid,
+             hostname, event_type_to_string(e->event_type), e->tgid,
              user_info ? user_info->pw_name : "unknown", e->old_uid, e->new_uid,
              cmdline, executable_path, hostname, start_time_rfc3339);
 
@@ -116,8 +127,9 @@ int handle_commit_creds_event(void* ctx, void* data, size_t size) {
       "cmdline=%s, "
       "executable_path=%s, "
       "hostname=%s  ",
-      e->event_type, user_info ? user_info->pw_name : "unknown", e->tgid,
-      e->old_uid, e->new_uid, cmdline, executable_path, hostname);
+      event_type_to_string(e->event_type),
+      user_info ? user_info->pw_name : "unknown", e->tgid, e->old_uid,
+      e->new_uid, cmdline, executable_path, hostname);
 
   free(old_caps_str);
   free(new_caps_str);
