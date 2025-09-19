@@ -15,6 +15,8 @@
 #include <stdbool.h>
 #include <time.h>
 
+#define HOSTNAME_LEN 128
+
 // Whitelist executable path
 const char* whitelist[] = {
     "/usr/bin/unix_chkpwd",
@@ -58,6 +60,10 @@ int handle_commit_creds_event(void* ctx, void* data, size_t size) {
   char* cmdline = GetCommandLine(e->tgid);
   if (!cmdline) cmdline = strdup("unknown");
 
+  // Hostname
+  char hostname[HOSTNAME_LEN];
+  GetHostname(hostname, HOSTNAME_LEN);
+
   struct app_ctx* app = (struct app_ctx*)ctx;
 
   // User name
@@ -92,7 +98,7 @@ int handle_commit_creds_event(void* ctx, void* data, size_t size) {
              "\"startsAt\":\"%s\""
              "}]",
              e->event_type, e->tgid, user_info ? user_info->pw_name : "unknown",
-             e->old_uid, e->new_uid, cmdline, executable_path, "localhost",
+             e->old_uid, e->new_uid, cmdline, executable_path, hostname,
              start_time_rfc3339);
 
     // If executable is in whitelist, ignore the alert
@@ -108,9 +114,10 @@ int handle_commit_creds_event(void* ctx, void* data, size_t size) {
   log_info(
       "event=%s, user=%s, tgid=%u, old_uid=%u, new_uid=%u, "
       "cmdline=%s, "
-      "executable_path:%s",
+      "executable_path=%s, "
+      "hostname=%s  ",
       e->event_type, user_info ? user_info->pw_name : "unknown", e->tgid,
-      e->old_uid, e->new_uid, cmdline, executable_path);
+      e->old_uid, e->new_uid, cmdline, executable_path, hostname);
 
   free(old_caps_str);
   free(new_caps_str);

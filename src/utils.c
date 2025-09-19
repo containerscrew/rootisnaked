@@ -154,8 +154,7 @@ void GetHostname(char* buf, size_t sz) {
   if (gethostname(buf, sz) != 0) {
     strncpy(buf, "unknown", sz - 1);
     buf[sz - 1] = '\0';
-  }
-  else {
-    buf[sz - 1] = '\0'; // Por si acaso gethostname no pone '\0'
+  } else {
+    buf[sz - 1] = '\0';
   }
 }

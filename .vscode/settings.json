@@ -10,6 +10,7 @@
         "handle_events.h": "c",
         "errno.h": "c",
         "curl.h": "c",
-        "libbpf.h": "c"
+        "libbpf.h": "c",
+        "sstream": "c"
     }
 }
