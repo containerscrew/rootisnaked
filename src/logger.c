@@ -49,6 +49,7 @@ static void log_message(char* level, const char* message) {
            level);
     exit(1);
   }
+  fflush(stdout);
 }
 
 // Helper function to handle formatted logging

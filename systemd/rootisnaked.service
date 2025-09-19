@@ -5,11 +5,17 @@ ConditionPathExists=/usr/local/share/rootisnaked/rootisnaked.bpf.o
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/rootisnaked
+ExecStart=/usr/bin/rootisnaked
 Restart=on-failure
 PIDFile=/run/rootisnaked.pid
-StandardOutput=append:/var/log/rootisnaked/lastlog
-StandardError=append:/var/log/rootisnaked/lastlog
+ExecStartPre=/usr/bin/mkdir -p /var/log/rootisnaked
+ExecStartPre=/usr/bin/touch /var/log/rootisnaked/lastlog
+ExecStartPre=/usr/bin/chown root:root /var/log/rootisnaked/lastlog
+ExecStartPre=/usr/bin/chmod 644 /var/log/rootisnaked/lastlog
+# StandardOutput=append:/var/log/rootisnaked/lastlog
+# StandardError=append:/var/log/rootisnaked/lastlog
+StandardOutput=file:/var/log/rootisnaked/lastlog
+StandardError=file:/var/log/rootisnaked/lastlog
 RestartSec=5s
 User=root
 Group=root
