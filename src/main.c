@@ -48,8 +48,10 @@ static struct bpf_program* find_program(struct bpf_object* obj,
 int main(void) {
   struct bpf_object* obj;
   int err = 0;
-  struct bpf_program *commit_creds_program, *file_permission_program;
-  struct bpf_link *commit_creds_link, *file_permission_link = NULL;
+  struct bpf_program *commit_creds_program, *file_permission_chmod_program,
+      *file_permission_fchmod_program, *file_permission_fchmodat_program;
+  struct bpf_link *commit_creds_link, *file_permission_chmod_link,
+      *file_permission_fchmod_link, *file_permission_fchmodat_link;
   int mapfd;
   struct ring_buffer* ring_buffer = NULL;
   const char* bpf_file = "build/rootisnaked.bpf.o";
@@ -89,29 +91,20 @@ int main(void) {
   obj = bpf_object__open_file(bpf_file, NULL);
   if (libbpf_get_error(obj)) {
     fprintf(stderr, "Failed to open BPF object file: %s\n", bpf_file);
-    curl_global_cleanup();
-    return 1;
+    err = -1;
+    goto cleanup;
   }
 
   if (bpf_object__load(obj)) {
     fprintf(stderr, "Error loading BPF object into the kernel\n");
-    bpf_object__close(obj);
-    curl_global_cleanup();
-    return 1;
+    err = -2;
+    goto cleanup;
   }
 
   commit_creds_program = find_program(obj, "commit_creds");
   if (!commit_creds_program) {
-    bpf_object__close(obj);
-    curl_global_cleanup();
-    return 1;
-  }
-
-  mapfd = bpf_object__find_map_fd_by_name(obj, "events");
-  if (mapfd < 0) {
-    fprintf(stderr, "Failed to find map 'commit_creds_events': %s\n",
-            strerror(-mapfd));
-    err = mapfd;
+    log_error("Could not find commit_creds program");
+    err = -3;
     goto cleanup;
   }
 
@@ -120,6 +113,68 @@ int main(void) {
     err = libbpf_get_error(commit_creds_link);
     commit_creds_link = NULL;
     fprintf(stderr, "Failed to attach program (fentry): %s\n", strerror(-err));
+    goto cleanup;
+  }
+
+  // sys_enter_chmod, sys_enter_fchmod, sys_enter_fchmodat
+  // TODO
+  file_permission_chmod_program =
+      bpf_object__find_program_by_name(obj, "file_permissions_chmod");
+  if (!file_permission_chmod_program) {
+    fprintf(stderr, "Failed to find eBPF program 'file_permissions_chmod'\n");
+    err = -ENOENT;
+    goto cleanup;
+  }
+
+  // Attach the eBPF program to the tracepoint
+  file_permission_chmod_link = bpf_program__attach_tracepoint(
+      file_permission_chmod_program, "syscalls", "sys_enter_chmod");
+  if (libbpf_get_error(file_permission_chmod_link)) {
+    fprintf(stderr, "Failed to attach BPF program to tracepoint\n");
+    err = -4;
+    goto cleanup;
+  }
+
+  file_permission_fchmod_program =
+      bpf_object__find_program_by_name(obj, "file_permissions_fchmod");
+  if (!file_permission_fchmod_program) {
+    fprintf(stderr, "Failed to find eBPF program 'file_permissions_fchmod'\n");
+    err = -ENOENT;
+    goto cleanup;
+  }
+
+  // Attach the eBPF program to the tracepoint
+  file_permission_fchmod_link = bpf_program__attach_tracepoint(
+      file_permission_fchmod_program, "syscalls", "sys_enter_fchmod");
+  if (libbpf_get_error(file_permission_fchmod_link)) {
+    fprintf(stderr, "Failed to attach BPF program to tracepoint\n");
+    err = -4;
+    goto cleanup;
+  }
+
+  file_permission_fchmodat_program =
+      bpf_object__find_program_by_name(obj, "file_permissions_fchmodat");
+  if (!file_permission_fchmodat_program) {
+    fprintf(stderr,
+            "Failed to find eBPF program 'file_permissions_fchmodat'\n");
+    err = -ENOENT;
+    goto cleanup;
+  }
+
+  // Attach the eBPF program to the tracepoint
+  file_permission_fchmodat_link = bpf_program__attach_tracepoint(
+      file_permission_fchmodat_program, "syscalls", "sys_enter_fchmodat");
+  if (libbpf_get_error(file_permission_fchmodat_link)) {
+    fprintf(stderr, "Failed to attach BPF program to tracepoint\n");
+    err = -4;
+    goto cleanup;
+  }
+
+  mapfd = bpf_object__find_map_fd_by_name(obj, "events");
+  if (mapfd < 0) {
+    fprintf(stderr, "Failed to find map 'commit_creds_events': %s\n",
+            strerror(-mapfd));
+    err = mapfd;
     goto cleanup;
   }
 
@@ -140,18 +195,10 @@ int main(void) {
   }
 
 cleanup:
-  if (ring_buffer) {
-    ring_buffer__free(ring_buffer);
-  }
-  if (commit_creds_link) {
-    bpf_link__destroy(commit_creds_link);
-  }
-
-  if (file_permission_link) {
-    bpf_link__destroy(file_permission_link);
-  }
-
-  bpf_object__close(obj);
+  if (ring_buffer) ring_buffer__free(ring_buffer);
+  if (commit_creds_link) bpf_link__destroy(commit_creds_link);
+  if (file_permission_chmod_link) bpf_link__destroy(file_permission_chmod_link);
+  if (obj) bpf_object__close(obj);
   curl_global_cleanup();
   return err;
 }

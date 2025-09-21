@@ -56,9 +56,17 @@ int handle_commit_creds_event(void* ctx, void* data, size_t size) {
     return -1;
   }
 
+  // Rapid check for size
+
+  if (size == sizeof(struct file_perm_event)) {
+    log_warning(
+        "Seems like a file_perm_event was received! Not implemented yet! :)\n");
+    return 0;
+  }
+
   if (size < sizeof(struct commit_creds_event)) {
-    fprintf(stderr, "Error: Invalid data size (expected %zu, got %zu)\n",
-            sizeof(struct commit_creds_event), size);
+    log_warning("Error: Invalid data size (expected %zu, got %zu)\n",
+                sizeof(struct commit_creds_event), size);
     return -1;
   }
 
