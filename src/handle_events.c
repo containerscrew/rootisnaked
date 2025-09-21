@@ -172,18 +172,17 @@ static int handle_file_perm_event(void* ctx, void* data, size_t size) {
              start_time_rfc3339);
 
     // Only send alert if the file is in /etc directory
-    if (strncmp(e->filename, "/etc", 5) == 0) {
-      int rc = send_alert(app->url, json);
-      if (rc != 0) {
-        fprintf(stderr, "Message failed (rc=%d)\n", rc);
-      }
-      log_info(
-          "event=%s, pid=%u, user=%s, uid=%u, comm=%s, mode=%o, filename=%s, "
-          "hostname=%s",
-          event_type_to_string(e->event_type), e->pid,
-          user_info ? user_info->pw_name : "unknown", e->uid, e->comm, e->mode,
-          e->filename, hostname);
+    int rc = send_alert(app->url, json);
+    if (rc != 0) {
+      fprintf(stderr, "Message failed (rc=%d)\n", rc);
     }
+
+    log_info(
+        "event=%s, pid=%u, user=%s, uid=%u, comm=%s, mode=%o, filename=%s, "
+        "hostname=%s",
+        event_type_to_string(e->event_type), e->pid,
+        user_info ? user_info->pw_name : "unknown", e->uid, e->comm, e->mode,
+        e->filename, hostname);
   }
   return 0;
 }
