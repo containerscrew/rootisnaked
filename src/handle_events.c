@@ -50,26 +50,7 @@ static inline const char* event_type_to_string(enum event_type type) {
   }
 }
 
-int handle_commit_creds_event(void* ctx, void* data, size_t size) {
-  if (!data) {
-    fprintf(stderr, "Error: Data pointer is NULL\n");
-    return -1;
-  }
-
-  // Rapid check for size
-
-  if (size == sizeof(struct file_perm_event)) {
-    log_warning(
-        "Seems like a file_perm_event was received! Not implemented yet! :)\n");
-    return 0;
-  }
-
-  if (size < sizeof(struct commit_creds_event)) {
-    log_warning("Error: Invalid data size (expected %zu, got %zu)\n",
-                sizeof(struct commit_creds_event), size);
-    return -1;
-  }
-
+static int handle_commit_creds_event(void* ctx, void* data, size_t size) {
   struct commit_creds_event* e = (struct commit_creds_event*)data;
 
   char* old_caps_str = caps_to_string(e->old_caps);
@@ -142,4 +123,87 @@ int handle_commit_creds_event(void* ctx, void* data, size_t size) {
   free(old_caps_str);
   free(new_caps_str);
   return 0;
+}
+
+static int handle_file_perm_event(void* ctx, void* data, size_t size) {
+  struct file_perm_event* e = (struct file_perm_event*)data;
+
+  // Fetch hostname
+  char hostname[HOSTNAME_LEN];
+  GetHostname(hostname, HOSTNAME_LEN);
+
+  struct app_ctx* app = (struct app_ctx*)ctx;
+
+  // Get username for UID
+  struct passwd* user_info = getpwuid(e->uid);
+
+  // If debug is not enabled, send alert to alertmanager (production ready)
+  if (!DEBUG_ENABLED) {
+    // Time in RFC3339 format (UTC)
+    char start_time_rfc3339[32];
+    get_current_time_rfc3339(start_time_rfc3339, sizeof(start_time_rfc3339));
+
+    char json[2048];
+    snprintf(json, sizeof(json),
+             "[{\"labels\":{"
+             "\"alertname\":\"FilePermissionChange\","
+             "\"severity\":\"critical\","
+             "\"instance\":\"%s\","
+             "\"event\":\"%s\","
+             "\"pid\":\"%u\","
+             "\"user\":\"%s\","
+             "\"uid\":\"%u\","
+             "\"comm\":\"%s\","
+             "\"mode\":\"%o\","
+             "\"filename\":\"%s\""
+             "},"
+             "\"annotations\":{"
+             "\"title\":\"Sensitive File Permission Change Detected\","
+             "\"description\":\"A file permission change was detected on host "
+             "%s: %s (mode: %o) by user %s (%u) [comm: %s]\""
+             "},"
+             "\"startsAt\":\"%s\""
+             "}]",
+             hostname,
+             event_type_to_string(e->event_type), // event
+             e->pid, user_info ? user_info->pw_name : "unknown", e->uid,
+             e->comm, e->mode, e->filename, hostname, e->filename, e->mode,
+             user_info ? user_info->pw_name : "unknown", e->uid, e->comm,
+             start_time_rfc3339);
+
+    if (strncmp(e->filename, "/etc", 5) == 0) {
+      int rc = send_alert(app->url, json);
+      if (rc != 0) {
+        fprintf(stderr, "Message failed (rc=%d)\n", rc);
+      }
+    }
+  }
+
+  log_info(
+      "event=%s, pid=%u, user=%s, uid=%u, comm=%s, mode=%o, filename=%s, "
+      "hostname=%s",
+      event_type_to_string(e->event_type), e->pid,
+      user_info ? user_info->pw_name : "unknown", e->uid, e->comm, e->mode,
+      e->filename, hostname);
+
+  return 0;
+}
+
+int handle_event(void* ctx, void* data, size_t size) {
+  if (!data) {
+    log_warning("Error: Data pointer is NULL\n");
+    return -1;
+  }
+
+  switch (size) {
+  case sizeof(struct commit_creds_event):
+    return handle_commit_creds_event(ctx, data, size);
+
+  case sizeof(struct file_perm_event):
+    return handle_file_perm_event(ctx, data, size);
+
+  default:
+    log_info("Received event with unexpected size: %zu bytes\n", size);
+    return -1;
+  }
 }

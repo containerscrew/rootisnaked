@@ -5,6 +5,6 @@
 
 extern int DEBUG_ENABLED;
 
-int handle_commit_creds_event(void* ctx, void* data, size_t size);
+int handle_event(void* ctx, void* data, size_t size);
 
 #endif /* HANDLE_EVENTS_H */

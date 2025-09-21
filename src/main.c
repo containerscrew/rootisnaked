@@ -178,7 +178,7 @@ int main(void) {
     goto cleanup;
   }
 
-  ring_buffer = ring_buffer__new(mapfd, handle_commit_creds_event, &app, NULL);
+  ring_buffer = ring_buffer__new(mapfd, handle_event, &app, NULL);
   if (!ring_buffer) {
     fprintf(stderr, "Failed to create ring buffer\n");
     goto cleanup;
