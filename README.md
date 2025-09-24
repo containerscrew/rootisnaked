@@ -84,6 +84,14 @@ sudo podman run -itd --restart always --name rootisnaked --privileged \
 
 > Using `sudo` because I use podman rootless
 
+## Using the script `scripts/install.sh` and systemd service
+
+```bash
+./scripts/install.sh
+```
+
+> This script will create a systemd service to run `rootisnaked` (`systemctl status rootisnaked`)
+
 # Setup alertmanager for centralized alerting
 
 ```bash
