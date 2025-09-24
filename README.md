@@ -37,7 +37,7 @@ It can be used, for example, to detect possible Linux privilege escalation.
 2025-09-24 11:06:41 [INFO]: event=commit_creds, user=dcr, tgid=36064, old_uid=1000, new_uid=0, cmdline=sudo su - , executable_path=/usr/bin/sudo, hostname=arch
 ```
 
-<h2 align="center">Telegram Alert Example (Using alertmanager) </h2>
+<h2 align="center">Alerting using alertmanager and telegram</h2>
 <p align="center">
   <img src="telegram_alert.png" alt="logo" width="400"/>
 </p>
