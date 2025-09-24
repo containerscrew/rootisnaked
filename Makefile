@@ -99,6 +99,9 @@ gen-vmlinux:
 clean:
 	rm -rf $(OBJDIR) $(BINDIR)
 
+compile-commands: clean
+	bear -- make
+
 build: clean all
 
 # ----------------------------------------------------------------------

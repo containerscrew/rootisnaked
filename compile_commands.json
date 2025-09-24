@@ -1,0 +1,95 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/clang",
+      "-O2",
+      "-g",
+      "-target",
+      "bpf",
+      "-D__TARGET_ARCH_x86",
+      "-Iinclude",
+      "-c",
+      "-o",
+      "build/rootisnaked.bpf.o",
+      "src/kernel/rootisnaked.bpf.c"
+    ],
+    "directory": "/home/dcr/Documents/Code/Personal/rootisnaked",
+    "file": "/home/dcr/Documents/Code/Personal/rootisnaked/src/kernel/rootisnaked.bpf.c",
+    "output": "/home/dcr/Documents/Code/Personal/rootisnaked/build/rootisnaked.bpf.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Iinclude",
+      "-Wall",
+      "-Wunused-but-set-variable",
+      "-c",
+      "-o",
+      "build/alerting.o",
+      "src/alerting.c"
+    ],
+    "directory": "/home/dcr/Documents/Code/Personal/rootisnaked",
+    "file": "/home/dcr/Documents/Code/Personal/rootisnaked/src/alerting.c",
+    "output": "/home/dcr/Documents/Code/Personal/rootisnaked/build/alerting.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Iinclude",
+      "-Wall",
+      "-Wunused-but-set-variable",
+      "-c",
+      "-o",
+      "build/handle_events.o",
+      "src/handle_events.c"
+    ],
+    "directory": "/home/dcr/Documents/Code/Personal/rootisnaked",
+    "file": "/home/dcr/Documents/Code/Personal/rootisnaked/src/handle_events.c",
+    "output": "/home/dcr/Documents/Code/Personal/rootisnaked/build/handle_events.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Iinclude",
+      "-Wall",
+      "-Wunused-but-set-variable",
+      "-c",
+      "-o",
+      "build/logger.o",
+      "src/logger.c"
+    ],
+    "directory": "/home/dcr/Documents/Code/Personal/rootisnaked",
+    "file": "/home/dcr/Documents/Code/Personal/rootisnaked/src/logger.c",
+    "output": "/home/dcr/Documents/Code/Personal/rootisnaked/build/logger.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Iinclude",
+      "-Wall",
+      "-Wunused-but-set-variable",
+      "-c",
+      "-o",
+      "build/main.o",
+      "src/main.c"
+    ],
+    "directory": "/home/dcr/Documents/Code/Personal/rootisnaked",
+    "file": "/home/dcr/Documents/Code/Personal/rootisnaked/src/main.c",
+    "output": "/home/dcr/Documents/Code/Personal/rootisnaked/build/main.o"
+  },
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-Iinclude",
+      "-Wall",
+      "-Wunused-but-set-variable",
+      "-c",
+      "-o",
+      "build/utils.o",
+      "src/utils.c"
+    ],
+    "directory": "/home/dcr/Documents/Code/Personal/rootisnaked",
+    "file": "/home/dcr/Documents/Code/Personal/rootisnaked/src/utils.c",
+    "output": "/home/dcr/Documents/Code/Personal/rootisnaked/build/utils.o"
+  }
+]

@@ -17,13 +17,19 @@
 
 // Some global flags, by the moment harcoded in the code
 // TODO: read from config file or env vars
-int DEBUG_ENABLED = 0;
+bool DEBUG_ENABLED = false;
+bool ALERTS_ENABLED = false;
 static volatile bool exiting = false;
 const char* alertmanager_url = "http://localhost:9093/api/v2/alerts";
 
 void init_debug_flag(void) {
   const char* debug = getenv("DEBUG");
-  DEBUG_ENABLED = (debug && strcmp(debug, "true") == 0) ? 1 : 0;
+  DEBUG_ENABLED = (debug && strcmp(debug, "true") == 0);
+}
+
+void init_alerts_enabled_flag(void) {
+  const char* alerts_enabled = getenv("ALERTS");
+  ALERTS_ENABLED = (alerts_enabled && strcmp(alerts_enabled, "true") == 0);
 }
 
 static void sig_handler(int sig) {
@@ -56,6 +62,7 @@ int main(void) {
   struct ring_buffer* ring_buffer = NULL;
   const char* bpf_file = "build/rootisnaked.bpf.o";
   init_debug_flag();
+  init_alerts_enabled_flag();
 
   if (access(bpf_file, R_OK) != 0) {
     bpf_file = "/usr/local/share/rootisnaked/rootisnaked.bpf.o";
@@ -85,6 +92,7 @@ int main(void) {
 
   log_info("Starting rootisnaked");
   if (DEBUG_ENABLED) {
+    printf("Debug mode enabled\n");
     libbpf_set_print(libbpf_print_fn);
   }
 

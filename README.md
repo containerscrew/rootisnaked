@@ -16,7 +16,7 @@
 
 ---
 
-> Rootisnaked was initially created using [ebpf-go](github.com/cilium/ebpf). The project actually uses [libbpf](https://github.com/libbpf/libbpf) (kernel and user space code written entirely in C). You can find the initial version [here](https://github.com/containerscrew/rootisnaked/tree/rootisnaked-go). There is no reason to use C instead of Go in the user space, it's a personal preference to practice C and libbpf. This new version using `libbpf` is missing some features by the moment (like sniffing file permissions changes).
+> Rootisnaked was initially created using [ebpf-go](github.com/cilium/ebpf). The project actually uses [libbpf](https://github.com/libbpf/libbpf) (kernel and user space code written entirely in C). You can find the initial version [here](https://github.com/containerscrew/rootisnaked/tree/rootisnaked-go). There is no reason to use C instead of Go in the user space, it's a personal preference to practice C and libbpf.
 
 # rootisnaked
 
@@ -24,16 +24,17 @@
 It can be used, for example, to detect possible Linux privilege escalation.
 
 > [!CAUTION]
-> This is an introduction of eBPF. This tool probably does not cover all possible attack vectors for escalating privileges.
+> This is an introduction of eBPF. This tool DOES NOT cover all possible attack vectors for escalating privileges.
 
 ---
 
 ![example](example.png)
 
 ```markdown
-2025-09-15 22:23:46 [INFO]: Starting rootisnaked
-2025-09-15 22:23:46 [INFO]: eBPF program loaded and attached. Waiting for commit_creds_events...
-2025-09-15 22:24:01 [INFO]: event=commit creds, user=dcr, tgid=140285, old_uid=1000, new_uid=0, cmdline=sudo su - , executable_path:/usr/bin/sudo
+2025-09-24 11:06:30 [INFO]: Starting rootisnaked
+2025-09-24 11:06:30 [INFO]: eBPF program loaded and attached. Waiting for commit_creds_events...
+2025-09-24 11:06:33 [INFO]: event=file_perm, pid=35890, user=root, uid=0, comm=chmod, mode=777, filename=/etc/test, hostname=arch
+2025-09-24 11:06:41 [INFO]: event=commit_creds, user=dcr, tgid=36064, old_uid=1000, new_uid=0, cmdline=sudo su - , executable_path=/usr/bin/sudo, hostname=arch
 ```
 
 <h2 align="center">Telegram Alert Example</h2>
@@ -42,11 +43,11 @@ It can be used, for example, to detect possible Linux privilege escalation.
 </p>
 
 > [!WARNING]
-> Documentation outdated.
+> Documentation still in progress
 
 # Running `rootisnaked`
 
-## Install system dependencies
+## Install system dependencies (Ubuntu)
 
 ```bash
 sudo apt install -y linux-headers-$(uname -r) vim gcc make clang libbpf-dev curl clang-format libcurl4-openssl-dev build-essential libelf-dev
@@ -61,10 +62,7 @@ make # Using all available threads
 # Or with only 1 thread
 # make -j1
 # make -j4 # Using 4 threads
-export TELEGRAM_TOKEN="xxxxx:xxxxx"; export DEBUG=false; export CHAT_ID="xxxxx"; sudo -E ./bin/rootisnaked
-# In background
-export TELEGRAM_TOKEN="xxxxx:xxxxx"; export DEBUG=false; export CHAT_ID="xxxxx"
-nohup sudo -E ./bin/rootisnaked > rootisnaked.log 2>&1 &
+DEBUG=false ALERTS=false sudo -E ./bin/rootisnaked
 ```
 
 ## Using docker
@@ -77,6 +75,8 @@ sudo docker build -f docker/Dockerfile -t containerscrew/rootisnaked:latest .
 
 ```bash
 sudo podman run -itd --restart always --name rootisnaked --privileged \
+  -v /proc:/proc:ro \
+  -v /sys:/sys:ro \
   -e TELEGRAM_TOKEN="xxxxxx:xxxxx" \
   -e CHAT_ID="xxxxxxx" \
   containerscrew/rootisnaked:latest
@@ -92,6 +92,9 @@ cp docker/.env.example docker/.env
 set -a; source docker/.env; set +a
 envsubst < docker/alertmanager/alertmanager.yml.tpl > docker/alertmanager/alertmanager.yml
 docker-compose -f docker/compose.yml up -d
+# Then run the binary with alerts enabled.
+# The url of alertmanager is harcoded to http://localhost:9093 by the moment
+DEBUG=true ALERTS=true sudo -E ./bin/rootisnaked
 ```
 
 # License

@@ -78,3 +78,6 @@ docker/.env
 # Alertmanager
 docker/alertmanager/alertmanager.yml
 
+
+# .cache for clangd
+.cache/
