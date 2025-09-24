@@ -81,3 +81,4 @@ docker/alertmanager/alertmanager.yml
 
 # .cache for clangd
 .cache/
+compile_commands.json
