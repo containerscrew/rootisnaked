@@ -20,6 +20,7 @@ sudo install -m 0644 "$SERVICE_NAME" /etc/systemd/system/
 
 # Create log directory and file
 sudo mkdir -p /var/log/rootisnaked
+sudo rm -f /var/log/rootisnaked/lastlog
 sudo touch /var/log/rootisnaked/lastlog
 sudo chown root:root /var/log/rootisnaked/lastlog
 sudo chmod 644 /var/log/rootisnaked/lastlog
