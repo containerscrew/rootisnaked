@@ -7,6 +7,8 @@
 
 char LICENSE[] SEC("license") = "Dual BSD/GPL";
 __u32 __version SEC("version") = LINUX_VERSION_CODE;
+extern int LINUX_KERNEL_VERSION __kconfig;
+
 
 #define WINDOW_NS (5ULL * 60ULL * 1000000000ULL) // 5 minutes
 

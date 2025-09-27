@@ -34,8 +34,9 @@ int send_alert(const char* url, const char* json_payload) {
   CURLcode res = curl_easy_perform(curl);
 
   long http_code = 0;
-  if (res == CURLE_OK)
+  if (res == CURLE_OK) {
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
+  }
 
   curl_easy_cleanup(curl);
   curl_slist_free_all(headers);

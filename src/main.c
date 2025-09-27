@@ -90,7 +90,7 @@ int main(void) {
     return 1;
   }
 
-  log_info("Starting rootisnaked");
+  log_info("starting rootisnaked");
   if (DEBUG_ENABLED) {
     printf("Debug mode enabled\n");
     libbpf_set_print(libbpf_print_fn);
@@ -195,8 +195,7 @@ int main(void) {
   signal(SIGINT, sig_handler);
   signal(SIGTERM, sig_handler);
 
-  log_info(
-      "eBPF program loaded and attached. Waiting for commit_creds_events...");
+  log_info("programs attached successfully, waiting for events..");
 
   while (!exiting) {
     ring_buffer__poll(ring_buffer, 1000);
