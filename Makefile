@@ -3,7 +3,7 @@
 # ----------------------------------------------------------------------
 CC        := gcc
 CPPFLAGS  += -Iinclude $(shell pkg-config --cflags libbpf libcurl)
-CFLAGS    += -Wall -MMD -Wunused-but-set-variable
+CFLAGS    += -Wall -MMD -Wunused-but-set-variable -DLOG_USE_COLOR
 LDLIBS    += $(shell pkg-config --libs libbpf libcurl) -ldl
 
 # ----------------------------------------------------------------------

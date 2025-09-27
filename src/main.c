@@ -1,6 +1,6 @@
 #include "common.h"
 #include "utils.h"
-#include "logger.h"
+#include "log.h"
 #include "handle_events.h"
 #include <bpf/bpf.h>
 #include <bpf/libbpf.h>
@@ -33,7 +33,7 @@ void init_alerts_enabled_flag(void) {
 }
 
 static void sig_handler(int sig) {
-  log_warning("Dettaching rootisnaked eBPF program, bye! Signal=%d\n", sig);
+  log_warn("Dettaching rootisnaked eBPF program, bye! Signal=%d\n", sig);
   exiting = true;
 }
 

@@ -1,7 +1,7 @@
 #include "common.h"
 #include "utils.h"
-#include "logger.h"
 #include "alerting.h"
+#include "log.h"
 #include "handle_events.h"
 #include <bpf/bpf.h>
 #include <bpf/libbpf.h>
@@ -186,7 +186,7 @@ static int handle_file_perm_event(void* ctx, void* data, size_t size) {
 
 int handle_event(void* ctx, void* data, size_t size) {
   if (!data) {
-    log_warning("Error: Data pointer is NULL\n");
+    log_warn("Error: Data pointer is NULL\n");
     return -1;
   }
 
