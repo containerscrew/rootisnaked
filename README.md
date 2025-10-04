@@ -42,8 +42,6 @@ It can be used, for example, to detect possible Linux privilege escalation.
   <img src="telegram_alert.png" alt="logo" width="400"/>
 </p>
 
-> [!WARNING]
-> Documentation still in progress
 
 # Running `rootisnaked`
 
@@ -55,6 +53,16 @@ sudo apt install -y linux-headers-$(uname -r) vim gcc make clang libbpf-dev curl
 
 > Tested on `Arch Linux` with kernel version `6.16.5-arch1-1` and `Ubuntu 24.04` with kernel version `6.2.0-26-generic`.
 
+## Optional: Setup alertmanager for centralized alerting (via telegram)
+
+```bash
+cp docker/.env.example docker/.env
+# Edit docker/.env and set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID
+set -a; source docker/.env; set +a
+envsubst < docker/alertmanager/alertmanager.yml.tpl > docker/alertmanager/alertmanager.yml
+docker-compose -f docker/compose.yml up -d
+```
+
 ## Compile and run
 
 ```bash
@@ -62,8 +70,12 @@ make # Using all available threads
 # Or with only 1 thread
 # make -j1
 # make -j4 # Using 4 threads
+DEBUG=false ALERTS=true sudo -E ./bin/rootisnaked
+# Or alerts disabled
 DEBUG=false ALERTS=false sudo -E ./bin/rootisnaked
 ```
+
+> The url of alertmanager is harcoded to http://localhost:9093 by the moment.
 
 ## Using docker
 
@@ -77,8 +89,8 @@ sudo docker build -f docker/Dockerfile -t containerscrew/rootisnaked:latest .
 sudo podman run -itd --restart always --name rootisnaked --privileged \
   -v /proc:/proc:ro \
   -v /sys:/sys:ro \
-  -e TELEGRAM_TOKEN="xxxxxx:xxxxx" \
-  -e CHAT_ID="xxxxxxx" \
+  -e DEBUG=false \
+  -e ALERTS=false \
   containerscrew/rootisnaked:latest
 ```
 
@@ -86,24 +98,13 @@ sudo podman run -itd --restart always --name rootisnaked --privileged \
 
 ## Using the script `scripts/install.sh` and systemd service
 
+By the moment I didn´t create any package (deb, rpm...) so I created a simple script to install and setup a systemd service to run `rootisnaked` on boot.
+
 ```bash
 ./scripts/install.sh
 ```
 
 > This script will create a systemd service to run `rootisnaked` (`systemctl status rootisnaked`)
-
-# Setup alertmanager for centralized alerting
-
-```bash
-cp docker/.env.example docker/.env
-# Edit docker/.env and set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID
-set -a; source docker/.env; set +a
-envsubst < docker/alertmanager/alertmanager.yml.tpl > docker/alertmanager/alertmanager.yml
-docker-compose -f docker/compose.yml up -d
-# Then run the binary with alerts enabled.
-# The url of alertmanager is harcoded to http://localhost:9093 by the moment
-DEBUG=true ALERTS=true sudo -E ./bin/rootisnaked
-```
 
 # License
 
