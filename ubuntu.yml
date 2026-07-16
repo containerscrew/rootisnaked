@@ -1,31 +1,40 @@
+# Lima VM to develop rootisnaked on macOS.
+# eBPF is Linux-only: edit on macOS (or over SSH from Zed) and build/run inside here.
+#
+#   limactl start --name=rootisnaked ./ubuntu.yml   # first boot: downloads image + provisions
+#   limactl shell rootisnaked                        # get a shell in the VM
+#   limactl stop rootisnaked / limactl delete rootisnaked
+#
+# Docs: https://lima-vm.io  (schema for Lima 2.x)
+
+# Apple Virtualization.framework: fast, and enables Rosetta on Apple Silicon.
+vmType: "vz"
+vmOpts:
+  vz:
+    rosetta:
+      enabled: true
+      binfmt: true
+
+# Ubuntu 24.04 LTS (kernel 6.8): ships BTF, BPF LSM and fchmodat2 — good eBPF base.
 images:
-  - location: "https://cloud-images.ubuntu.com/releases/plucky/release/ubuntu-25.04-server-cloudimg-amd64.img"
+  - location: "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-amd64.img"
     arch: "x86_64"
-  - location: "https://cloud-images.ubuntu.com/releases/plucky/release/ubuntu-25.04-server-cloudimg-arm64.img"
+  - location: "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-arm64.img"
     arch: "aarch64"
 
-user:
-  name: "ebpf"
+cpus: 2
+memory: "4GiB"
+disk: "20GiB"
 
+# virtiofs = fast bind mount (requires vmType: vz). The repo appears at the SAME
+# absolute path inside the guest, so Zed-over-SSH opens the identical path.
+mountType: "virtiofs"
 mounts:
   - location: "~/Documents/Code/Personal/rootisnaked"
-    mountPoint: "/home/ebpf.linux/rootisnaked"
     writable: true
 
-  - location: "~/.ssh/lima"
-    mountPoint: "/tmp/lima"
-    writable: false
-
-memory: "2GiB"
-cpus: 2
-disk: "15GiB"
-
-rosetta:
-  enabled: true
-  binfmt: true
-
+# Lima wires SSH keys automatically (no manual authorized_keys dance needed).
 ssh:
-  localPort: 2222
   loadDotSSHPubKeys: true
 
 provision:
@@ -33,12 +42,12 @@ provision:
     script: |
       #!/bin/bash
       set -eux -o pipefail
-      apt update -y
-      apt install -y vim gcc make clang libbpf-dev curl clang-format libcurl4-openssl-dev build-essential libelf-dev
-
-  - mode: user
-    script: |
-      #!/bin/bash
-      set -eux -o pipefail
-      sudo cat /tmp/lima/lima.pub >> $HOME/.ssh/authorized_keys
-      sudo chmod 0644 $HOME/.ssh/authorized_keys
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update -y
+      # Note: on Ubuntu noble `bpftool` is a virtual package with no candidate;
+      # the binary ships via linux-tools-common (already in the cloud image).
+      apt-get install -y \
+        gcc make clang llvm \
+        libbpf-dev libelf-dev zlib1g-dev libcurl4-openssl-dev \
+        build-essential pkg-config linux-tools-common \
+        clang-format clang-tidy bear git vim
